@@ -1,7 +1,7 @@
 // ========== Enum 정의 ==========
 
 // 제품 카테고리
-export type Category = 'SMARTPHONE' | 'LAPTOP' | 'TABLET' | 'SMARTWATCH' | 'EARPHONE' | 'SPEAKER' | 'MONITOR';
+export type Category = 'SMARTPHONE' | 'LAPTOP' | 'TABLET' | 'SMARTWATCH' | 'EARPHONE' | 'SPEAKER' | 'MONITOR' | 'KEYBOARD_MOUSE' | 'TV';
 
 // 카테고리 한국어 레이블
 export const CATEGORY_LABELS: Record<Category, string> = {
@@ -12,6 +12,8 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   EARPHONE: '이어폰/헤드폰',
   SPEAKER: '블루투스 스피커',
   MONITOR: '모니터',
+  KEYBOARD_MOUSE: '키보드/마우스',
+  TV: 'TV',
 };
 
 // 카테고리 목록 (선택 UI용)
@@ -23,6 +25,8 @@ export const CATEGORIES: { code: Category; name: string }[] = [
   { code: 'EARPHONE', name: '이어폰/헤드폰' },
   { code: 'SPEAKER', name: '블루투스 스피커' },
   { code: 'MONITOR', name: '모니터' },
+  { code: 'KEYBOARD_MOUSE', name: '키보드/마우스' },
+  { code: 'TV', name: 'TV' },
 ];
 
 // 제품 상태

@@ -89,6 +89,25 @@ const CATEGORY_KEYWORDS: Record<Category, string[]> = {
     '모니터', '컴퓨터 모니터', '게이밍 모니터', '게이밍모니터',
     '울트라와이드', '커브드 모니터', '디스플레이',
   ],
+  KEYBOARD_MOUSE: [
+    // 영문 (Vision API 라벨)
+    'keyboard', 'mechanical keyboard', 'gaming keyboard', 'wireless keyboard',
+    'mouse', 'gaming mouse', 'wireless mouse', 'optical mouse',
+    'keycap', 'keycaps', 'mx switches', 'cherry mx',
+    'logitech', 'razer', 'corsair', 'ducky', 'leopold', 'realforce',
+    // 한글
+    '키보드', '마우스', '기계식 키보드', '게이밍 키보드', '무선 키보드',
+    '게이밍 마우스', '무선 마우스', '기계식키보드', '게이밍마우스',
+  ],
+  TV: [
+    // 영문 (Vision API 라벨)
+    'television', 'tv', 'smart tv', 'oled tv', 'qled tv', 'led tv',
+    'lcd tv', 'flat screen', '4k tv', '8k tv', 'uhd tv',
+    'lg tv', 'samsung tv', 'sony tv', 'bravia',
+    // 한글
+    '티비', '텔레비전', '스마트 TV', '올레드', '큐레드',
+    'TV', '스마트TV', '올레드TV',
+  ],
 };
 
 // 브랜드별 제품 카테고리 매핑 (브랜드 감지 시 카테고리 추론에 사용)
@@ -107,9 +126,14 @@ const BRAND_PRODUCT_HINTS: Record<string, { keywords: string[]; category: Catego
     { keywords: ['galaxy watch', '갤럭시 워치'], category: 'SMARTWATCH' },
     { keywords: ['galaxy buds', '갤럭시 버즈', 'buds'], category: 'EARPHONE' },
     { keywords: ['odyssey', 'viewfinity', 'smart monitor'], category: 'MONITOR' },
+    { keywords: ['neo qled', 'qled', 'the frame', 'crystal uhd', 'samsung tv'], category: 'TV' },
   ],
   LG: [
     { keywords: ['ultragear', '27gp', '27gn', '32gp', 'ultrawide', '34wk', '38wn'], category: 'MONITOR' },
+    { keywords: ['oled', 'nanocell', 'lg tv', 'webos'], category: 'TV' },
+  ],
+  Sony: [
+    { keywords: ['bravia', 'sony tv', 'xr', 'x90', 'a80', 'a90'], category: 'TV' },
   ],
   Dell: [
     { keywords: ['u27', 'u24', 'u32', 's27', 's24', 'ultrasharp', 'alienware monitor'], category: 'MONITOR' },
@@ -133,6 +157,18 @@ const BRAND_PRODUCT_HINTS: Record<string, { keywords: string[]; category: Catego
   ],
   BenQ: [
     { keywords: ['zowie', 'mobiuz', 'ex', 'xl', 'pd', 'sw', 'gw', 'ew'], category: 'MONITOR' },
+  ],
+  Logitech: [
+    { keywords: ['g pro', 'g502', 'g703', 'mx master', 'mx anywhere', 'g305'], category: 'KEYBOARD_MOUSE' },
+    { keywords: ['g915', 'g915 tkl', 'g pro x', 'g913', 'mx keys'], category: 'KEYBOARD_MOUSE' },
+  ],
+  Razer: [
+    { keywords: ['deathadder', 'viper', 'basilisk', 'naga', 'orochi'], category: 'KEYBOARD_MOUSE' },
+    { keywords: ['huntsman', 'blackwidow', 'ornata', 'cynosa'], category: 'KEYBOARD_MOUSE' },
+  ],
+  Corsair: [
+    { keywords: ['k70', 'k95', 'k100', 'k65', 'k55'], category: 'KEYBOARD_MOUSE' },
+    { keywords: ['dark core', 'harpoon', 'ironclaw', 'scimitar', 'm65'], category: 'KEYBOARD_MOUSE' },
   ],
 };
 
@@ -186,6 +222,16 @@ const BRAND_KEYWORDS = [
   { brand: 'AOC', keywords: ['aoc', 'agon'] },
   // MSI
   { brand: 'MSI', keywords: ['msi', 'optix', 'mag'] },
+  // Logitech
+  { brand: 'Logitech', keywords: ['logitech', 'g pro', 'g502', 'mx master', 'mx keys', '로지텍'] },
+  // Razer
+  { brand: 'Razer', keywords: ['razer', 'deathadder', 'huntsman', 'viper', 'blackwidow', '레이저'] },
+  // Corsair
+  { brand: 'Corsair', keywords: ['corsair', 'k70', 'k95', 'dark core', '커세어', '코세어'] },
+  // Ducky
+  { brand: 'Ducky', keywords: ['ducky', 'one 2', 'shine', '덕키'] },
+  // Leopold
+  { brand: 'Leopold', keywords: ['leopold', 'fc660', 'fc750', 'fc900', '레오폴드'] },
 ];
 
 // 모델명 패턴 (제품별 구체적 패턴 우선)
@@ -372,6 +418,8 @@ function detectCategory(text: string, brand: string | null): Category | null {
     EARPHONE: 0,
     SPEAKER: 0,
     MONITOR: 0,
+    KEYBOARD_MOUSE: 0,
+    TV: 0,
   };
 
   // 키워드 매칭
@@ -488,6 +536,8 @@ function buildProductName(
       EARPHONE: '이어폰',
       SPEAKER: '블루투스 스피커',
       MONITOR: '모니터',
+      KEYBOARD_MOUSE: '키보드/마우스',
+      TV: 'TV',
     };
     parts.push(categoryNames[category]);
   }

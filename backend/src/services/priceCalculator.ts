@@ -43,6 +43,8 @@ const CATEGORY_PRICE_RANGES: Record<Category, { min: number; max: number }> = {
   EARPHONE: { min: 10000, max: 500000 },
   SPEAKER: { min: 20000, max: 1000000 },   // 블루투스 스피커
   MONITOR: { min: 50000, max: 3000000 },   // 모니터
+  KEYBOARD_MOUSE: { min: 10000, max: 500000 },  // 키보드/마우스
+  TV: { min: 100000, max: 10000000 },      // TV
 };
 
 // 기본 가격 범위 (카테고리 미지정 시)

@@ -12,13 +12,15 @@ datasource db {
 
 // 제품 카테고리 Enum
 enum Category {
-  SMARTPHONE  // 스마트폰
-  LAPTOP      // 노트북
-  TABLET      // 태블릿
-  SMARTWATCH  // 스마트워치
-  EARPHONE    // 이어폰/헤드폰
-  SPEAKER     // 블루투스 스피커
-  MONITOR     // 모니터
+  SMARTPHONE     // 스마트폰
+  LAPTOP         // 노트북
+  TABLET         // 태블릿
+  SMARTWATCH     // 스마트워치
+  EARPHONE       // 이어폰/헤드폰
+  SPEAKER        // 블루투스 스피커
+  MONITOR        // 모니터
+  KEYBOARD_MOUSE // 키보드/마우스
+  TV             // TV
 }
 
 // 제품 상태 Enum

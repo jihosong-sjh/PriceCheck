@@ -11,6 +11,8 @@ export const CategoryEnum = z.enum([
   'EARPHONE',
   'SPEAKER',
   'MONITOR',
+  'KEYBOARD_MOUSE',
+  'TV',
 ]);
 export type Category = z.infer<typeof CategoryEnum>;
 
@@ -23,6 +25,8 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   EARPHONE: '이어폰/헤드폰',
   SPEAKER: '블루투스 스피커',
   MONITOR: '모니터',
+  KEYBOARD_MOUSE: '키보드/마우스',
+  TV: 'TV',
 };
 
 // 제품 상태 (Prisma 스키마와 일치)
