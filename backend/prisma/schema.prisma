@@ -1,0 +1,99 @@
+// prisma/schema.prisma
+// 중고 전자제품 가격 가이드 데이터베이스 스키마
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 제품 카테고리 Enum
+enum Category {
+  SMARTPHONE  // 스마트폰
+  LAPTOP      // 노트북
+  TABLET      // 태블릿
+  SMARTWATCH  // 스마트워치
+  EARPHONE    // 이어폰/헤드폰
+}
+
+// 제품 상태 Enum
+enum Condition {
+  GOOD  // 상 (외관 깨끗, 기능 정상)
+  FAIR  // 중 (사용감 있음, 기능 정상)
+  POOR  // 하 (외관 손상 있음, 일부 기능 이상)
+}
+
+// 중고거래 플랫폼 Enum
+enum Platform {
+  BUNJANG     // 번개장터
+  JOONGONARA  // 중고나라
+}
+
+// 사용자 모델
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  recommendations PriceRecommendation[]
+
+  @@map("users")
+}
+
+// 가격 추천 모델
+model PriceRecommendation {
+  id                 String    @id @default(cuid())
+  userId             String?   @map("user_id")
+  category           Category
+  productName        String    @map("product_name")
+  modelName          String?   @map("model_name")
+  condition          Condition
+  recommendedPrice   Int       @map("recommended_price")
+  priceMin           Int       @map("price_min")
+  priceMax           Int       @map("price_max")
+  marketDataSnapshot Json      @map("market_data_snapshot")
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  user   User?          @relation(fields: [userId], references: [id])
+  images ProductImage[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([productName])
+  @@index([category])
+  @@map("price_recommendations")
+}
+
+// 시세 데이터 모델 (크롤링 결과 저장)
+model MarketData {
+  id          String   @id @default(cuid())
+  productName String   @map("product_name")
+  modelName   String?  @map("model_name")
+  platform    Platform
+  price       Int
+  condition   String?
+  originalUrl String?  @map("original_url")
+  scrapedAt   DateTime @map("scraped_at")
+  metadata    Json?
+
+  @@index([productName, platform, scrapedAt(sort: Desc)])
+  @@index([scrapedAt(sort: Desc)])
+  @@map("market_data")
+}
+
+// 제품 이미지 모델
+model ProductImage {
+  id               String   @id @default(cuid())
+  recommendationId String   @map("recommendation_id")
+  imageUrl         String   @map("image_url")
+  uploadedAt       DateTime @default(now()) @map("uploaded_at")
+
+  recommendation PriceRecommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+
+  @@index([recommendationId])
+  @@map("product_images")
+}

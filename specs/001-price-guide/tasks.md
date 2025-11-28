@@ -24,15 +24,15 @@
 
 **목적**: 프로젝트 초기화 및 기본 구조 생성
 
-- [ ] T001 plan.md 구조에 따라 프로젝트 디렉토리 구조 생성
-- [ ] T002 [P] backend/package.json 생성 및 Express, TypeScript, Prisma, Playwright, Cheerio 의존성 설정
-- [ ] T003 [P] frontend/package.json 생성 및 Next.js 14, TypeScript, TailwindCSS, NextAuth 의존성 설정
-- [ ] T004 [P] backend/tsconfig.json TypeScript 설정 구성
-- [ ] T005 [P] frontend/tsconfig.json TypeScript 설정 구성
-- [ ] T006 [P] backend/.env.example 환경 변수 템플릿 생성
-- [ ] T007 [P] frontend/.env.example 환경 변수 템플릿 생성
-- [ ] T008 [P] ESLint 및 Prettier 설정 (backend, frontend 각각)
-- [ ] T009 backend/prisma/schema.prisma 데이터베이스 스키마 생성 (data-model.md 기준)
+- [X] T001 plan.md 구조에 따라 프로젝트 디렉토리 구조 생성
+- [X] T002 [P] backend/package.json 생성 및 Express, TypeScript, Prisma, Playwright, Cheerio 의존성 설정
+- [X] T003 [P] frontend/package.json 생성 및 Next.js 14, TypeScript, TailwindCSS, NextAuth 의존성 설정
+- [X] T004 [P] backend/tsconfig.json TypeScript 설정 구성
+- [X] T005 [P] frontend/tsconfig.json TypeScript 설정 구성
+- [X] T006 [P] backend/.env.example 환경 변수 템플릿 생성
+- [X] T007 [P] frontend/.env.example 환경 변수 템플릿 생성
+- [X] T008 [P] ESLint 및 Prettier 설정 (backend, frontend 각각)
+- [X] T009 backend/prisma/schema.prisma 데이터베이스 스키마 생성 (data-model.md 기준)
 
 ---
 
