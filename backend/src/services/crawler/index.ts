@@ -1,10 +1,11 @@
 /**
  * 크롤러 통합 관리자
- * 번개장터, 중고나라 크롤러를 통합 관리하고 병렬 실행
+ * 번개장터, 중고나라, 헬로마켓 크롤러를 통합 관리하고 병렬 실행
  */
 
 import bunjangCrawler, { type CrawlResult } from './bunjang.js';
 import joongonaraCrawler from './joongonara.js';
+import hellomarketCrawler from './hellomarket.js';
 import type { Platform, Category } from '../../utils/validators.js';
 
 // 크롤러 옵션
@@ -18,7 +19,7 @@ export interface CrawlerOptions {
 const DEFAULT_OPTIONS: Required<CrawlerOptions> = {
   maxItemsPerPlatform: 20,
   timeout: 30000,
-  platforms: ['BUNJANG', 'JOONGONARA'],
+  platforms: ['BUNJANG', 'JOONGONARA', 'HELLOMARKET'],
 };
 
 // 크롤링 통합 결과
@@ -107,6 +108,11 @@ export async function crawlAllPlatforms(
         maxItems: opts.maxItemsPerPlatform,
         timeout: opts.timeout,
       }),
+    HELLOMARKET: () =>
+      hellomarketCrawler.crawl(enhancedName, enhancedModel, {
+        maxItems: opts.maxItemsPerPlatform,
+        timeout: opts.timeout,
+      }),
   };
 
   // 선택된 플랫폼만 크롤링
@@ -134,6 +140,7 @@ export async function crawlAllPlatforms(
   const itemsByPlatform: Record<Platform, number> = {
     BUNJANG: 0,
     JOONGONARA: 0,
+    HELLOMARKET: 0,
   };
 
   for (const item of allItems) {
@@ -172,6 +179,11 @@ export async function crawlPlatform(
       });
     case 'JOONGONARA':
       return joongonaraCrawler.crawl(productName, modelName, {
+        maxItems: opts.maxItemsPerPlatform,
+        timeout: opts.timeout,
+      });
+    case 'HELLOMARKET':
+      return hellomarketCrawler.crawl(productName, modelName, {
         maxItems: opts.maxItemsPerPlatform,
         timeout: opts.timeout,
       });

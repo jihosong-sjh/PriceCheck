@@ -34,6 +34,7 @@ enum Condition {
 enum Platform {
   BUNJANG     // 번개장터
   JOONGONARA  // 중고나라
+  HELLOMARKET // 헬로마켓
 }
 
 // 사용자 모델

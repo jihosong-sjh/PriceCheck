@@ -47,12 +47,13 @@ export const CONDITIONS: { code: Condition; name: string; description: string }[
 ];
 
 // 플랫폼
-export type Platform = 'BUNJANG' | 'JOONGONARA';
+export type Platform = 'BUNJANG' | 'JOONGONARA' | 'HELLOMARKET';
 
 // 플랫폼 한국어 레이블
 export const PLATFORM_LABELS: Record<Platform, string> = {
   BUNJANG: '번개장터',
   JOONGONARA: '중고나라',
+  HELLOMARKET: '헬로마켓',
 };
 
 // ========== API 요청/응답 타입 ==========

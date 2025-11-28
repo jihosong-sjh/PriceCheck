@@ -45,6 +45,11 @@ const PLATFORM_STYLES: Record<string, { bg: string; text: string; border: string
     text: 'text-green-700',
     border: 'border-green-200',
   },
+  HELLOMARKET: {
+    bg: 'bg-blue-50',
+    text: 'text-blue-700',
+    border: 'border-blue-200',
+  },
 };
 
 // 기본 플랫폼 스타일

@@ -1,12 +1,32 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import {
   type PriceRecommendResponse,
   CATEGORY_LABELS,
   CONDITION_LABELS,
 } from '@/lib/types';
+import { calculateCV } from '@/lib/chartUtils';
 import MarketComparison from './MarketComparison';
 import BookmarkButton from './BookmarkButton';
+
+// 차트 컴포넌트 동적 로딩 (SSR 비활성화)
+const ConfidenceIndicator = dynamic(
+  () => import('./charts/ConfidenceIndicator'),
+  { ssr: false }
+);
+const PriceDistributionChart = dynamic(
+  () => import('./charts/PriceDistributionChart'),
+  { ssr: false }
+);
+const PlatformComparisonChart = dynamic(
+  () => import('./charts/PlatformComparisonChart'),
+  { ssr: false }
+);
+const PriceExplanationCard = dynamic(
+  () => import('./charts/PriceExplanationCard'),
+  { ssr: false }
+);
 
 interface PriceResultProps {
   result: PriceRecommendResponse | null;
@@ -131,9 +151,41 @@ export default function PriceResult({ result, error, onReset, recommendationId }
         </dl>
       </div>
 
+      {/* 시세 신뢰도 */}
+      {result.marketDataSnapshot && result.marketDataSnapshot.length > 0 && (
+        <ConfidenceIndicator
+          sampleCount={result.marketDataSnapshot.length}
+          coefficientOfVariation={calculateCV(result.marketDataSnapshot.map((d) => d.price))}
+        />
+      )}
+
+      {/* 가격 분포 차트 */}
+      {result.marketDataSnapshot && result.marketDataSnapshot.length >= 3 && (
+        <PriceDistributionChart
+          marketData={result.marketDataSnapshot}
+          recommendedPrice={recommendedPrice}
+          priceMin={priceMin}
+          priceMax={priceMax}
+        />
+      )}
+
+      {/* 플랫폼별 비교 차트 */}
+      {result.marketDataSnapshot && result.marketDataSnapshot.length > 0 && (
+        <PlatformComparisonChart marketData={result.marketDataSnapshot} />
+      )}
+
       {/* 시세 비교 정보 */}
       {result.marketDataSnapshot && result.marketDataSnapshot.length > 0 && (
         <MarketComparison marketData={result.marketDataSnapshot} />
+      )}
+
+      {/* 가격 산출 과정 */}
+      {result.marketDataSnapshot && result.marketDataSnapshot.length > 0 && (
+        <PriceExplanationCard
+          condition={condition}
+          sampleCount={result.marketDataSnapshot.length}
+          recommendedPrice={recommendedPrice}
+        />
       )}
 
       {/* 가격 분석 안내 */}
@@ -155,7 +207,7 @@ export default function PriceResult({ result, error, onReset, recommendationId }
           <div>
             <h4 className="font-medium text-gray-900">가격 분석 안내</h4>
             <p className="mt-1 text-sm text-gray-600">
-              추천 가격은 번개장터, 중고나라의 최근 거래 시세를 분석하여 산출되었습니다.
+              추천 가격은 번개장터, 중고나라, 헬로마켓의 최근 거래 시세를 분석하여 산출되었습니다.
               실제 판매 시에는 제품의 구체적인 상태, 구성품, 지역 등에 따라 가격이 달라질 수 있습니다.
             </p>
           </div>

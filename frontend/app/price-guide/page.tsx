@@ -6,7 +6,7 @@ import PriceForm from '@/components/PriceForm';
 import PriceResult from '@/components/PriceResult';
 import ImageUpload, { type UploadedImage } from '@/components/ImageUpload';
 import { requestPriceRecommend, recognizeProduct, ApiException, setAuthToken } from '@/lib/api';
-import type { PriceRecommendRequest, PriceRecommendResponse, Category, RecognitionResult } from '@/lib/types';
+import type { PriceRecommendRequest, PriceRecommendResponse, Category } from '@/lib/types';
 
 type ViewState = 'form' | 'result';
 
@@ -96,7 +96,7 @@ export default function PriceGuidePage() {
     }
   }, [uploadedImages]);
 
-  const handleSubmit = async (data: PriceRecommendRequest, imageKeys?: string[]) => {
+  const handleSubmit = async (data: PriceRecommendRequest, _imageKeys?: string[]) => {
     setIsLoading(true);
     setError(null);
 
