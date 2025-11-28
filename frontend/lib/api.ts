@@ -118,16 +118,76 @@ export async function getCategories(): Promise<CategoriesResponse> {
   return request<CategoriesResponse>('/price/categories');
 }
 
-// 가격 추천 요청
-export async function requestPriceRecommend(
-  data: PriceRecommendRequest
-): Promise<PriceRecommendResponse> {
-  return request<PriceRecommendResponse>('/price/recommend', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-}
+// 백엔드 응답 타입 (내부 사용)
+  interface BackendPriceResponse {
+    success: boolean;
+    data: {
+      input: {
+        category: string;
+        categoryName: string;
+        productName: string;
+        modelName?: string;
+        condition: string;
+        conditionName: string;
+      };
+      recommendation: {
+        recommendedPrice: number;
+        priceMin: number;
+        priceMax: number;
+        averagePrice: number;
+        medianPrice: number;
+        confidence: string;
+        sampleCount: number;
+      };
+      marketDataSnapshot: Array<{
+        price: number;
+        platform: string;
+        condition?: string;
+        originalUrl?: string;
+        scrapedAt: string;
+      }>;
+      crawlStats: {
+        totalItems: number;
+        itemsByPlatform: Record<string, number>;
+        crawlDuration: number;
+      };
+    };
+  }
 
+  // 가격 추천 요청
+  export async function requestPriceRecommend(
+    data: PriceRecommendRequest
+  ): Promise<PriceRecommendResponse> {
+    const response = await request<BackendPriceResponse>('/price/recommend', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+
+    // 백엔드 응답을 프론트엔드 형식으로 변환
+    const { input, recommendation, marketDataSnapshot } = response.data;
+
+    return {
+      id: crypto.randomUUID(),
+      category: input.category as PriceRecommendResponse['category'],
+      productName: input.productName,
+      modelName: input.modelName,
+      condition: input.condition as PriceRecommendResponse['condition'],
+      recommendedPrice: recommendation.recommendedPrice,
+      priceMin: recommendation.priceMin,
+      priceMax: recommendation.priceMax,
+      marketDataSnapshot: marketDataSnapshot.map((item, index) => ({
+        id: `${index}`,
+        productName: input.productName,
+        modelName: input.modelName,
+        platform: item.platform as 'BUNJANG' | 'JOONGONARA',
+        price: item.price,
+        condition: item.condition,
+        originalUrl: item.originalUrl,
+        scrapedAt: item.scrapedAt,
+      })),
+      createdAt: new Date().toISOString(),
+    };
+  }
 // ========== 인증 API ==========
 
 // 회원가입
