@@ -1,0 +1,649 @@
+openapi: 3.0.3
+info:
+  title: 중고 전자제품 가격 가이드 API
+  description: |
+    중고 전자제품의 적정 판매가를 추천하는 API입니다.
+    사용자가 제품 정보를 입력하면 시세 데이터를 분석하여 추천 가격을 제공합니다.
+  version: 1.0.0
+  contact:
+    name: PriceCheck Team
+
+servers:
+  - url: http://localhost:3001/api
+    description: 개발 서버
+  - url: https://api.pricecheck.kr/api
+    description: 프로덕션 서버
+
+tags:
+  - name: 가격 추천
+    description: 가격 추천 관련 API
+  - name: 히스토리
+    description: 추천 히스토리 관련 API
+  - name: 인증
+    description: 사용자 인증 관련 API
+  - name: 업로드
+    description: 이미지 업로드 관련 API
+
+paths:
+  /price/recommend:
+    post:
+      tags:
+        - 가격 추천
+      summary: 가격 추천 받기
+      description: |
+        제품 정보를 입력받아 적정 판매가를 추천합니다.
+        비회원도 이용 가능하며, 회원인 경우 히스토리에 자동 저장됩니다.
+      operationId: getRecommendation
+      security:
+        - BearerAuth: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PriceRecommendationRequest'
+            example:
+              category: SMARTPHONE
+              productName: iPhone 14 Pro
+              modelName: 128GB
+              condition: GOOD
+      responses:
+        '200':
+          description: 가격 추천 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceRecommendationResponse'
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: INVALID_INPUT
+                message: 제품명은 필수 입력 항목입니다.
+        '404':
+          description: 시세 데이터 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NO_MARKET_DATA
+                message: 해당 제품의 시세 정보를 찾을 수 없습니다.
+        '503':
+          description: 서비스 일시 중단
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: SERVICE_UNAVAILABLE
+                message: 일시적으로 시세 조회가 불가합니다. 잠시 후 다시 시도해주세요.
+
+  /price/categories:
+    get:
+      tags:
+        - 가격 추천
+      summary: 지원 카테고리 조회
+      description: 시스템이 지원하는 전자제품 카테고리 목록을 조회합니다.
+      operationId: getCategories
+      responses:
+        '200':
+          description: 카테고리 목록 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+              example:
+                categories:
+                  - code: SMARTPHONE
+                    name: 스마트폰
+                  - code: LAPTOP
+                    name: 노트북
+                  - code: TABLET
+                    name: 태블릿
+                  - code: SMARTWATCH
+                    name: 스마트워치
+                  - code: EARPHONE
+                    name: 이어폰/헤드폰
+
+  /history:
+    get:
+      tags:
+        - 히스토리
+      summary: 추천 히스토리 목록 조회
+      description: |
+        로그인한 사용자의 가격 추천 히스토리를 조회합니다.
+        최근 30일 이내의 기록만 조회됩니다.
+      operationId: getHistory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: 페이지 번호 (1부터 시작)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: 페이지당 항목 수
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+      responses:
+        '200':
+          description: 히스토리 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryListResponse'
+        '401':
+          description: 인증 필요
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: UNAUTHORIZED
+                message: 로그인이 필요합니다.
+
+  /history/{id}:
+    get:
+      tags:
+        - 히스토리
+      summary: 추천 히스토리 상세 조회
+      description: 특정 가격 추천 히스토리의 상세 정보를 조회합니다.
+      operationId: getHistoryDetail
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 히스토리 ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 상세 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryDetailResponse'
+        '401':
+          description: 인증 필요
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 히스토리 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: NOT_FOUND
+                message: 해당 히스토리를 찾을 수 없습니다.
+
+  /auth/signup:
+    post:
+      tags:
+        - 인증
+      summary: 회원가입
+      description: 이메일과 비밀번호로 회원가입합니다.
+      operationId: signup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+            example:
+              email: user@example.com
+              password: password123
+      responses:
+        '201':
+          description: 회원가입 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: INVALID_INPUT
+                message: 비밀번호는 최소 8자 이상이어야 합니다.
+        '409':
+          description: 이메일 중복
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: EMAIL_EXISTS
+                message: 이미 사용 중인 이메일입니다.
+
+  /auth/login:
+    post:
+      tags:
+        - 인증
+      summary: 로그인
+      description: 이메일과 비밀번호로 로그인합니다.
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: user@example.com
+              password: password123
+      responses:
+        '200':
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: 인증 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: INVALID_CREDENTIALS
+                message: 이메일 또는 비밀번호가 올바르지 않습니다.
+
+  /auth/me:
+    get:
+      tags:
+        - 인증
+      summary: 현재 사용자 정보 조회
+      description: 로그인한 사용자의 정보를 조회합니다.
+      operationId: getCurrentUser
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 사용자 정보 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: 인증 필요
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /upload/image:
+    post:
+      tags:
+        - 업로드
+      summary: 제품 이미지 업로드
+      description: |
+        제품 사진을 업로드합니다.
+        지원 형식: JPG, PNG (최대 10MB)
+      operationId: uploadImage
+      security:
+        - BearerAuth: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: 제품 이미지 파일 (JPG, PNG)
+                recommendationId:
+                  type: string
+                  description: 연결할 추천 ID (선택)
+      responses:
+        '200':
+          description: 업로드 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageUploadResponse'
+        '400':
+          description: 잘못된 요청
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidFormat:
+                  summary: 지원하지 않는 형식
+                  value:
+                    error: INVALID_FORMAT
+                    message: JPG, PNG 형식만 지원합니다.
+                fileTooLarge:
+                  summary: 파일 크기 초과
+                  value:
+                    error: FILE_TOO_LARGE
+                    message: 파일 크기가 10MB를 초과합니다.
+
+  /upload/image/{id}:
+    delete:
+      tags:
+        - 업로드
+      summary: 이미지 삭제
+      description: 업로드한 이미지를 삭제합니다.
+      operationId: deleteImage
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 이미지 ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 삭제 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '404':
+          description: 이미지 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT 인증 토큰
+
+  schemas:
+    # 요청 스키마
+    PriceRecommendationRequest:
+      type: object
+      required:
+        - category
+        - productName
+        - condition
+      properties:
+        category:
+          type: string
+          enum: [SMARTPHONE, LAPTOP, TABLET, SMARTWATCH, EARPHONE]
+          description: 제품 카테고리
+        productName:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: 제품명
+        modelName:
+          type: string
+          maxLength: 50
+          description: 모델명 (선택)
+        condition:
+          type: string
+          enum: [GOOD, FAIR, POOR]
+          description: 제품 상태
+
+    SignupRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: 이메일
+        password:
+          type: string
+          minLength: 8
+          description: 비밀번호 (8자 이상)
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: 이메일
+        password:
+          type: string
+          description: 비밀번호
+
+    # 응답 스키마
+    PriceRecommendationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 추천 ID
+        category:
+          type: string
+          description: 제품 카테고리
+        productName:
+          type: string
+          description: 제품명
+        modelName:
+          type: string
+          nullable: true
+          description: 모델명
+        condition:
+          type: string
+          description: 제품 상태
+        recommendedPrice:
+          type: integer
+          description: 추천 가격 (원)
+        priceMin:
+          type: integer
+          description: 최저 가격 (원)
+        priceMax:
+          type: integer
+          description: 최고 가격 (원)
+        marketData:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketDataItem'
+          description: 시세 비교 정보
+        createdAt:
+          type: string
+          format: date-time
+          description: 생성일시
+      example:
+        id: clz1234567890
+        category: SMARTPHONE
+        productName: iPhone 14 Pro
+        modelName: 128GB
+        condition: GOOD
+        recommendedPrice: 850000
+        priceMin: 800000
+        priceMax: 900000
+        marketData:
+          - platform: BUNJANG
+            price: 870000
+            condition: 상
+            originalUrl: https://www.bunjang.co.kr/products/123456
+            registeredAt: "2025-11-25T10:30:00Z"
+          - platform: JOONGONARA
+            price: 830000
+            condition: 상
+            originalUrl: https://www.joongonara.co.kr/product/123456
+            registeredAt: "2025-11-26T14:20:00Z"
+        createdAt: "2025-11-28T09:00:00Z"
+
+    MarketDataItem:
+      type: object
+      properties:
+        platform:
+          type: string
+          enum: [BUNJANG, JOONGONARA]
+          description: 플랫폼
+        price:
+          type: integer
+          description: 판매 가격 (원)
+        condition:
+          type: string
+          nullable: true
+          description: 제품 상태 (원문)
+        originalUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: 원본 게시글 URL
+        registeredAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: 등록일
+
+    HistoryListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryListItem'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    HistoryListItem:
+      type: object
+      properties:
+        id:
+          type: string
+        category:
+          type: string
+        productName:
+          type: string
+        modelName:
+          type: string
+          nullable: true
+        condition:
+          type: string
+        recommendedPrice:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    HistoryDetailResponse:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/PriceRecommendationResponse'
+        - type: object
+          properties:
+            images:
+              type: array
+              items:
+                $ref: '#/components/schemas/ImageItem'
+
+    ImageItem:
+      type: object
+      properties:
+        id:
+          type: string
+        imageUrl:
+          type: string
+          format: uri
+        uploadedAt:
+          type: string
+          format: date-time
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT 토큰
+        user:
+          $ref: '#/components/schemas/UserResponse'
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    ImageUploadResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 이미지 ID
+        imageUrl:
+          type: string
+          format: uri
+          description: 이미지 URL
+
+    Category:
+      type: object
+      properties:
+        code:
+          type: string
+          description: 카테고리 코드
+        name:
+          type: string
+          description: 카테고리 이름 (한국어)
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: 에러 코드
+        message:
+          type: string
+          description: 에러 메시지 (한국어)
