@@ -17,6 +17,11 @@ out/
 .env.production.local
 .env.example
 
+# Google Cloud credentials (절대 커밋 금지!)
+**/google-credentials.json
+**/gcp-*.json
+**/*-service-account.json
+
 # Logs
 *.log
 npm-debug.log*

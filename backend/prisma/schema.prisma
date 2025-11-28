@@ -41,6 +41,7 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   recommendations PriceRecommendation[]
+  bookmarks       Bookmark[]
 
   @@map("users")
 }
@@ -59,8 +60,9 @@ model PriceRecommendation {
   marketDataSnapshot Json      @map("market_data_snapshot")
   createdAt          DateTime  @default(now()) @map("created_at")
 
-  user   User?          @relation(fields: [userId], references: [id])
-  images ProductImage[]
+  user      User?          @relation(fields: [userId], references: [id])
+  images    ProductImage[]
+  bookmarks Bookmark[]
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([productName])
@@ -96,4 +98,27 @@ model ProductImage {
 
   @@index([recommendationId])
   @@map("product_images")
+}
+
+// 북마크(찜하기) 모델
+model Bookmark {
+  id               String    @id @default(cuid())
+  userId           String    @map("user_id")
+  recommendationId String?   @map("recommendation_id")
+
+  // 독립 저장용 (히스토리 없이 직접 찜하기)
+  category         Category?
+  productName      String?   @map("product_name")
+  modelName        String?   @map("model_name")
+
+  memo             String?
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recommendation PriceRecommendation? @relation(fields: [recommendationId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, recommendationId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("bookmarks")
 }

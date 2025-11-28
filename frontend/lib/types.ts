@@ -154,6 +154,64 @@ export interface ImageUploadResponse {
   url: string;
 }
 
+// ========== 북마크 타입 ==========
+
+// 북마크 항목
+export interface BookmarkItem {
+  id: string;
+  type: 'recommendation' | 'standalone';
+  recommendationId: string | null;
+  category: Category | null;
+  categoryLabel: string | null;
+  productName: string | null;
+  modelName: string | null;
+  condition: Condition | null;
+  conditionLabel: string | null;
+  recommendedPrice: number | null;
+  priceMin: number | null;
+  priceMax: number | null;
+  memo: string | null;
+  createdAt: string;
+  recommendationCreatedAt: string | null;
+}
+
+// 북마크 목록 응답
+export interface BookmarkListResponse {
+  items: BookmarkItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// 북마크 생성 요청
+export interface CreateBookmarkRequest {
+  recommendationId?: string;
+  category?: Category;
+  productName?: string;
+  modelName?: string;
+  memo?: string;
+}
+
+// 북마크 여부 확인 응답
+export interface BookmarkCheckResponse {
+  isBookmarked: boolean;
+  bookmarkId: string | null;
+}
+
+// ========== 이미지 인식 타입 ==========
+
+// 이미지 인식 결과
+export interface RecognitionResult {
+  category: Category | null;
+  brand: string | null;
+  productName: string | null;
+  modelName: string | null;
+  confidence: number;
+  rawLabels: string[];
+  rawTexts: string[];
+}
+
 // ========== API 에러 ==========
 
 export interface ApiError {

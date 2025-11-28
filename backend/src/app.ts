@@ -6,6 +6,8 @@ import priceRouter from './api/price.js';
 import uploadRouter from './api/upload.js';
 import authRouter from './api/auth.js';
 import historyRouter from './api/history.js';
+import bookmarkRouter from './api/bookmark.js';
+import recognizeRouter from './api/recognize.js';
 
 // 환경 변수 로드
 dotenv.config();
@@ -31,6 +33,8 @@ app.use('/api/price', priceRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/history', historyRouter);
+app.use('/api/bookmarks', bookmarkRouter);
+app.use('/api/recognize', recognizeRouter);
 
 // 404 처리
 app.use((_req: Request, res: Response) => {

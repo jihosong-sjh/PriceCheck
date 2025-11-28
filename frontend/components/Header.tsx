@@ -43,6 +43,15 @@ export default function Header() {
               가격 추천
             </Link>
             <Link
+              href="/bookmarks"
+              className="text-gray-600 hover:text-primary-600 font-medium no-underline flex items-center gap-1"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              찜 목록
+            </Link>
+            <Link
               href="/history"
               className="text-gray-600 hover:text-primary-600 font-medium no-underline"
             >
@@ -105,6 +114,16 @@ export default function Header() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 가격 추천
+              </Link>
+              <Link
+                href="/bookmarks"
+                className="px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg no-underline flex items-center gap-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                찜 목록
               </Link>
               <Link
                 href="/history"

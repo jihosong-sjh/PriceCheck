@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import {
   type Category,
   type Condition,
@@ -8,24 +8,50 @@ import {
   CATEGORIES,
   CONDITIONS,
 } from '@/lib/types';
-import ImageUpload, { type UploadedImage } from './ImageUpload';
 
 interface PriceFormProps {
   onSubmit: (data: PriceRecommendRequest, imageKeys?: string[]) => void;
   isLoading?: boolean;
+  initialValues?: {
+    category?: Category;
+    productName?: string;
+    modelName?: string;
+  };
+  imageKeys?: string[];
 }
 
-export default function PriceForm({ onSubmit, isLoading = false }: PriceFormProps) {
+export default function PriceForm({
+  onSubmit,
+  isLoading = false,
+  initialValues,
+  imageKeys,
+}: PriceFormProps) {
   const [category, setCategory] = useState<Category | ''>('');
   const [productName, setProductName] = useState('');
   const [modelName, setModelName] = useState('');
   const [condition, setCondition] = useState<Condition | ''>('');
-  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [errors, setErrors] = useState<{
     category?: string;
     productName?: string;
     condition?: string;
   }>({});
+
+  // initialValues가 변경되면 폼 값 업데이트 (AI 인식 결과 적용)
+  useEffect(() => {
+    if (initialValues) {
+      if (initialValues.category) {
+        setCategory(initialValues.category);
+        setErrors((prev) => ({ ...prev, category: undefined }));
+      }
+      if (initialValues.productName) {
+        setProductName(initialValues.productName);
+        setErrors((prev) => ({ ...prev, productName: undefined }));
+      }
+      if (initialValues.modelName) {
+        setModelName(initialValues.modelName);
+      }
+    }
+  }, [initialValues]);
 
   const validateForm = (): boolean => {
     const newErrors: typeof errors = {};
@@ -53,8 +79,6 @@ export default function PriceForm({ onSubmit, isLoading = false }: PriceFormProp
       return;
     }
 
-    const imageKeys = uploadedImages.map((img) => img.key);
-
     onSubmit(
       {
         category: category as Category,
@@ -62,12 +86,8 @@ export default function PriceForm({ onSubmit, isLoading = false }: PriceFormProp
         modelName: modelName.trim() || undefined,
         condition: condition as Condition,
       },
-      imageKeys.length > 0 ? imageKeys : undefined
+      imageKeys && imageKeys.length > 0 ? imageKeys : undefined
     );
-  };
-
-  const handleImageChange = (images: UploadedImage[]) => {
-    setUploadedImages(images);
   };
 
   return (
@@ -167,20 +187,6 @@ export default function PriceForm({ onSubmit, isLoading = false }: PriceFormProp
           ))}
         </div>
         {errors.condition && <p className="input-error mt-2">{errors.condition}</p>}
-      </div>
-
-      {/* 제품 사진 업로드 (선택) */}
-      <div className="input-group">
-        <label className="input-label">
-          제품 사진 <span className="text-gray-400">(선택)</span>
-        </label>
-        <ImageUpload
-          onImageChange={handleImageChange}
-          maxImages={5}
-        />
-        <p className="input-help mt-2">
-          제품 사진을 업로드하면 향후 AI 분석 기능에 활용될 수 있습니다
-        </p>
       </div>
 
       {/* 제출 버튼 */}

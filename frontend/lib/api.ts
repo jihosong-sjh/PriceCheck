@@ -10,6 +10,11 @@ import type {
   HistoryDetailResponse,
   ImageUploadResponse,
   ApiError,
+  BookmarkItem,
+  BookmarkListResponse,
+  CreateBookmarkRequest,
+  BookmarkCheckResponse,
+  RecognitionResult,
 } from './types';
 
 // API 기본 URL
@@ -122,6 +127,7 @@ export async function getCategories(): Promise<CategoriesResponse> {
   interface BackendPriceResponse {
     success: boolean;
     data: {
+      id?: string;
       input: {
         category: string;
         categoryName: string;
@@ -164,10 +170,10 @@ export async function getCategories(): Promise<CategoriesResponse> {
     });
 
     // 백엔드 응답을 프론트엔드 형식으로 변환
-    const { input, recommendation, marketDataSnapshot } = response.data;
+    const { id, input, recommendation, marketDataSnapshot } = response.data;
 
     return {
-      id: crypto.randomUUID(),
+      id: id || crypto.randomUUID(), // 로그인 사용자는 백엔드 ID, 비로그인은 임시 ID
       category: input.category as PriceRecommendResponse['category'],
       productName: input.productName,
       modelName: input.modelName,
@@ -378,4 +384,103 @@ export async function deleteImage(key: string): Promise<{ message: string }> {
 
 export async function healthCheck(): Promise<{ status: string; timestamp: string }> {
   return request<{ status: string; timestamp: string }>('/health');
+}
+
+// ========== 북마크 API ==========
+
+// 백엔드 북마크 목록 응답 타입 (내부 사용)
+interface BackendBookmarkListResponse {
+  success: boolean;
+  data: {
+    items: BookmarkItem[];
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalCount: number;
+      limit: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
+  };
+}
+
+// 백엔드 북마크 생성 응답 타입 (내부 사용)
+interface BackendBookmarkCreateResponse {
+  success: boolean;
+  message: string;
+  data: BookmarkItem;
+}
+
+// 백엔드 북마크 확인 응답 타입 (내부 사용)
+interface BackendBookmarkCheckResponse {
+  success: boolean;
+  data: BookmarkCheckResponse;
+}
+
+// 북마크 목록 조회
+export async function getBookmarkList(
+  page: number = 1,
+  limit: number = 10
+): Promise<BookmarkListResponse> {
+  const response = await request<BackendBookmarkListResponse>('/bookmarks', {
+    params: { page, limit },
+  });
+
+  return {
+    items: response.data.items,
+    total: response.data.pagination.totalCount,
+    page: response.data.pagination.currentPage,
+    limit: response.data.pagination.limit,
+    totalPages: response.data.pagination.totalPages,
+  };
+}
+
+// 북마크 추가
+export async function createBookmark(
+  data: CreateBookmarkRequest
+): Promise<BookmarkItem> {
+  const response = await request<BackendBookmarkCreateResponse>('/bookmarks', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+  return response.data;
+}
+
+// 북마크 삭제
+export async function deleteBookmark(id: string): Promise<{ message: string }> {
+  return request<{ message: string }>(`/bookmarks/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+// 북마크 여부 확인
+export async function checkBookmark(
+  recommendationId: string
+): Promise<BookmarkCheckResponse> {
+  const response = await request<BackendBookmarkCheckResponse>(
+    `/bookmarks/check/${recommendationId}`
+  );
+
+  return response.data;
+}
+
+// ========== 이미지 인식 API ==========
+
+// 백엔드 인식 응답 타입 (내부 사용)
+interface BackendRecognizeResponse {
+  success: boolean;
+  data: RecognitionResult;
+}
+
+// 이미지에서 제품 정보 인식
+export async function recognizeProduct(
+  imageUrl: string
+): Promise<RecognitionResult> {
+  const response = await request<BackendRecognizeResponse>('/recognize', {
+    method: 'POST',
+    body: JSON.stringify({ imageUrl }),
+  });
+
+  return response.data;
 }

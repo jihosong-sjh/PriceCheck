@@ -6,11 +6,13 @@ import {
   CONDITION_LABELS,
 } from '@/lib/types';
 import MarketComparison from './MarketComparison';
+import BookmarkButton from './BookmarkButton';
 
 interface PriceResultProps {
   result: PriceRecommendResponse | null;
   error: string | null;
   onReset?: () => void;
+  recommendationId?: string;
 }
 
 // 가격 포맷 함수
@@ -18,7 +20,7 @@ function formatPrice(price: number): string {
   return new Intl.NumberFormat('ko-KR').format(price);
 }
 
-export default function PriceResult({ result, error, onReset }: PriceResultProps) {
+export default function PriceResult({ result, error, onReset, recommendationId }: PriceResultProps) {
   // 에러 메시지 표시
   if (error) {
     return (
@@ -68,7 +70,13 @@ export default function PriceResult({ result, error, onReset }: PriceResultProps
   return (
     <div className="space-y-6">
       {/* 추천 가격 카드 */}
-      <div className="card bg-gradient-to-br from-primary-50 to-blue-50 border-primary-200">
+      <div className="card bg-gradient-to-br from-primary-50 to-blue-50 border-primary-200 relative">
+        {/* 찜하기 버튼 */}
+        {recommendationId && (
+          <div className="absolute top-4 right-4">
+            <BookmarkButton recommendationId={recommendationId} size="md" />
+          </div>
+        )}
         <div className="text-center">
           <h3 className="text-lg font-medium text-gray-600 mb-2">추천 판매가</h3>
           <div className="price-display text-4xl">
