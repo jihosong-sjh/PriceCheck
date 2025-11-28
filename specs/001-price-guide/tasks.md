@@ -84,17 +84,17 @@
 
 ### 프론트엔드 구현
 
-- [ ] T026 [P] [US1] frontend/components/PriceForm.tsx 가격 추천 입력 폼 컴포넌트 구현
+- [X] T026 [P] [US1] frontend/components/PriceForm.tsx 가격 추천 입력 폼 컴포넌트 구현
   - 카테고리 선택 (스마트폰, 노트북, 태블릿, 스마트워치, 이어폰)
   - 제품명, 모델명 입력
   - 상태(상/중/하) 선택
   - 가격 추천 버튼
-- [ ] T027 [P] [US1] frontend/components/PriceResult.tsx 추천 결과 표시 컴포넌트 구현
+- [X] T027 [P] [US1] frontend/components/PriceResult.tsx 추천 결과 표시 컴포넌트 구현
   - 추천 가격 표시
   - 가격 범위(최저~최고) 표시
   - 에러 메시지 표시 (시세 데이터 없음 등)
-- [ ] T028 [US1] frontend/app/price-guide/page.tsx 가격 추천 메인 페이지 구현
-- [ ] T029 [US1] frontend/app/page.tsx 홈페이지에서 가격 추천 페이지로 리다이렉트 또는 메인 진입점 설정
+- [X] T028 [US1] frontend/app/price-guide/page.tsx 가격 추천 메인 페이지 구현
+- [X] T029 [US1] frontend/app/page.tsx 홈페이지에서 가격 추천 페이지로 리다이렉트 또는 메인 진입점 설정
 
 **체크포인트**: 사용자 스토리 1 완료 - 비회원이 가격 추천을 받을 수 있음 (MVP 완성)
 
