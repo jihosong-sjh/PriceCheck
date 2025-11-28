@@ -24,15 +24,15 @@
 
 **목적**: 프로젝트 초기화 및 기본 구조 생성
 
-- [ ] T001 plan.md 구조에 따라 프로젝트 디렉토리 구조 생성
-- [ ] T002 [P] backend/package.json 생성 및 Express, TypeScript, Prisma, Playwright, Cheerio 의존성 설정
-- [ ] T003 [P] frontend/package.json 생성 및 Next.js 14, TypeScript, TailwindCSS, NextAuth 의존성 설정
-- [ ] T004 [P] backend/tsconfig.json TypeScript 설정 구성
-- [ ] T005 [P] frontend/tsconfig.json TypeScript 설정 구성
-- [ ] T006 [P] backend/.env.example 환경 변수 템플릿 생성
-- [ ] T007 [P] frontend/.env.example 환경 변수 템플릿 생성
-- [ ] T008 [P] ESLint 및 Prettier 설정 (backend, frontend 각각)
-- [ ] T009 backend/prisma/schema.prisma 데이터베이스 스키마 생성 (data-model.md 기준)
+- [X] T001 plan.md 구조에 따라 프로젝트 디렉토리 구조 생성
+- [X] T002 [P] backend/package.json 생성 및 Express, TypeScript, Prisma, Playwright, Cheerio 의존성 설정
+- [X] T003 [P] frontend/package.json 생성 및 Next.js 14, TypeScript, TailwindCSS, NextAuth 의존성 설정
+- [X] T004 [P] backend/tsconfig.json TypeScript 설정 구성
+- [X] T005 [P] frontend/tsconfig.json TypeScript 설정 구성
+- [X] T006 [P] backend/.env.example 환경 변수 템플릿 생성
+- [X] T007 [P] frontend/.env.example 환경 변수 템플릿 생성
+- [X] T008 [P] ESLint 및 Prettier 설정 (backend, frontend 각각)
+- [X] T009 backend/prisma/schema.prisma 데이터베이스 스키마 생성 (data-model.md 기준)
 
 ---
 
@@ -42,16 +42,16 @@
 
 **⚠️ 중요**: 이 단계 완료 전에는 사용자 스토리 작업 시작 불가
 
-- [ ] T010 backend/src/app.ts Express 앱 진입점 및 기본 설정 구현
-- [ ] T011 [P] backend/src/middleware/errorHandler.ts 전역 에러 처리 미들웨어 구현
-- [ ] T012 [P] backend/src/utils/validators.ts 입력 검증 유틸리티 구현 (Zod 활용)
-- [ ] T013 [P] frontend/app/layout.tsx 공통 레이아웃 구현 (한국어 설정)
-- [ ] T014 [P] frontend/app/globals.css TailwindCSS 전역 스타일 설정
-- [ ] T015 [P] frontend/components/Header.tsx 헤더 컴포넌트 구현
-- [ ] T016 [P] frontend/components/Footer.tsx 푸터 컴포넌트 구현
-- [ ] T017 [P] frontend/lib/types.ts 공통 타입 정의 (Category, Condition, Platform 등)
-- [ ] T018 [P] frontend/lib/api.ts API 클라이언트 유틸리티 구현
-- [ ] T019 Prisma 마이그레이션 실행 및 클라이언트 생성 설정
+- [X] T010 backend/src/app.ts Express 앱 진입점 및 기본 설정 구현
+- [X] T011 [P] backend/src/middleware/errorHandler.ts 전역 에러 처리 미들웨어 구현
+- [X] T012 [P] backend/src/utils/validators.ts 입력 검증 유틸리티 구현 (Zod 활용)
+- [X] T013 [P] frontend/app/layout.tsx 공통 레이아웃 구현 (한국어 설정)
+- [X] T014 [P] frontend/app/globals.css TailwindCSS 전역 스타일 설정
+- [X] T015 [P] frontend/components/Header.tsx 헤더 컴포넌트 구현
+- [X] T016 [P] frontend/components/Footer.tsx 푸터 컴포넌트 구현
+- [X] T017 [P] frontend/lib/types.ts 공통 타입 정의 (Category, Condition, Platform 등)
+- [X] T018 [P] frontend/lib/api.ts API 클라이언트 유틸리티 구현
+- [X] T019 Prisma 마이그레이션 실행 및 클라이언트 생성 설정
 
 **체크포인트**: 기반 완료 - 이제 사용자 스토리 구현 시작 가능
 
@@ -65,36 +65,36 @@
 
 ### 백엔드 구현 - 크롤러
 
-- [ ] T020 [P] [US1] backend/src/services/crawler/bunjang.ts 번개장터 크롤러 구현 (Playwright + Cheerio)
-- [ ] T021 [P] [US1] backend/src/services/crawler/joongonara.ts 중고나라 크롤러 구현 (Axios + Cheerio)
-- [ ] T022 [US1] backend/src/services/crawler/index.ts 크롤러 통합 관리자 구현
+- [X] T020 [P] [US1] backend/src/services/crawler/bunjang.ts 번개장터 크롤러 구현 (Playwright + Cheerio)
+- [X] T021 [P] [US1] backend/src/services/crawler/joongonara.ts 중고나라 크롤러 구현 (Axios + Cheerio)
+- [X] T022 [US1] backend/src/services/crawler/index.ts 크롤러 통합 관리자 구현
 
 ### 백엔드 구현 - 가격 계산
 
-- [ ] T023 [US1] backend/src/services/priceCalculator.ts 시세 분석 및 추천 가격 계산 로직 구현
+- [X] T023 [US1] backend/src/services/priceCalculator.ts 시세 분석 및 추천 가격 계산 로직 구현
   - 평균, 중앙값, 가격 범위 계산
   - 상태(상/중/하)에 따른 가격 조정
 
 ### 백엔드 구현 - API
 
-- [ ] T024 [US1] backend/src/api/price.ts 가격 추천 API 라우트 구현
+- [X] T024 [US1] backend/src/api/price.ts 가격 추천 API 라우트 구현
   - GET /api/price/categories - 카테고리 목록 조회
   - POST /api/price/recommend - 가격 추천 요청
-- [ ] T025 [US1] backend/src/app.ts에 price 라우트 등록
+- [X] T025 [US1] backend/src/app.ts에 price 라우트 등록
 
 ### 프론트엔드 구현
 
-- [ ] T026 [P] [US1] frontend/components/PriceForm.tsx 가격 추천 입력 폼 컴포넌트 구현
+- [X] T026 [P] [US1] frontend/components/PriceForm.tsx 가격 추천 입력 폼 컴포넌트 구현
   - 카테고리 선택 (스마트폰, 노트북, 태블릿, 스마트워치, 이어폰)
   - 제품명, 모델명 입력
   - 상태(상/중/하) 선택
   - 가격 추천 버튼
-- [ ] T027 [P] [US1] frontend/components/PriceResult.tsx 추천 결과 표시 컴포넌트 구현
+- [X] T027 [P] [US1] frontend/components/PriceResult.tsx 추천 결과 표시 컴포넌트 구현
   - 추천 가격 표시
   - 가격 범위(최저~최고) 표시
   - 에러 메시지 표시 (시세 데이터 없음 등)
-- [ ] T028 [US1] frontend/app/price-guide/page.tsx 가격 추천 메인 페이지 구현
-- [ ] T029 [US1] frontend/app/page.tsx 홈페이지에서 가격 추천 페이지로 리다이렉트 또는 메인 진입점 설정
+- [X] T028 [US1] frontend/app/price-guide/page.tsx 가격 추천 메인 페이지 구현
+- [X] T029 [US1] frontend/app/page.tsx 홈페이지에서 가격 추천 페이지로 리다이렉트 또는 메인 진입점 설정
 
 **체크포인트**: 사용자 스토리 1 완료 - 비회원이 가격 추천을 받을 수 있음 (MVP 완성)
 
@@ -108,17 +108,17 @@
 
 ### 백엔드 구현
 
-- [ ] T030 [US2] backend/src/api/price.ts 가격 추천 응답에 marketDataSnapshot 포함 확인
+- [X] T030 [US2] backend/src/api/price.ts 가격 추천 응답에 marketDataSnapshot 포함 확인
   - 최소 3개 이상 유사 매물 정보 반환
   - 가격, 상태, 플랫폼, 등록일, 원본 URL 포함
 
 ### 프론트엔드 구현
 
-- [ ] T031 [US2] frontend/components/MarketComparison.tsx 시세 비교 정보 컴포넌트 구현
+- [X] T031 [US2] frontend/components/MarketComparison.tsx 시세 비교 정보 컴포넌트 구현
   - 유사 매물 목록 테이블/카드 형태 표시
   - 플랫폼별 아이콘/색상 구분
   - 원본 링크 클릭 시 새 탭에서 열기
-- [ ] T032 [US2] frontend/components/PriceResult.tsx에 MarketComparison 컴포넌트 통합
+- [X] T032 [US2] frontend/components/PriceResult.tsx에 MarketComparison 컴포넌트 통합
 
 **체크포인트**: 사용자 스토리 2 완료 - 추천 가격 근거 확인 가능
 
@@ -132,25 +132,25 @@
 
 ### 백엔드 구현
 
-- [ ] T033 [P] [US3] backend/src/services/imageUpload.ts S3 이미지 업로드 서비스 구현
+- [X] T033 [P] [US3] backend/src/services/imageUpload.ts S3 이미지 업로드 서비스 구현
   - Multer로 파일 수신
   - Sharp로 이미지 최적화 (리사이징, WebP 변환)
   - S3 업로드 및 URL 반환
   - 파일 형식 검증 (JPG, PNG만 허용)
   - 파일 크기 제한 (10MB)
-- [ ] T034 [US3] backend/src/api/upload.ts 이미지 업로드 API 라우트 구현
+- [X] T034 [US3] backend/src/api/upload.ts 이미지 업로드 API 라우트 구현
   - POST /api/upload - 이미지 업로드
   - DELETE /api/upload/:key - 이미지 삭제
-- [ ] T035 [US3] backend/src/app.ts에 upload 라우트 등록
+- [X] T035 [US3] backend/src/app.ts에 upload 라우트 등록
 
 ### 프론트엔드 구현
 
-- [ ] T036 [US3] frontend/components/ImageUpload.tsx 이미지 업로드 컴포넌트 구현
+- [X] T036 [US3] frontend/components/ImageUpload.tsx 이미지 업로드 컴포넌트 구현
   - 파일 선택 버튼
   - 이미지 미리보기
   - 삭제 버튼
   - 형식/크기 오류 메시지 표시
-- [ ] T037 [US3] frontend/components/PriceForm.tsx에 ImageUpload 컴포넌트 통합
+- [X] T037 [US3] frontend/components/PriceForm.tsx에 ImageUpload 컴포넌트 통합
 
 **체크포인트**: 사용자 스토리 3 완료 - 사진 업로드 및 미리보기 가능
 
@@ -164,40 +164,40 @@
 
 ### 백엔드 구현 - 인증
 
-- [ ] T038 [P] [US4] backend/src/services/auth.ts 인증 서비스 구현
+- [X] T038 [P] [US4] backend/src/services/auth.ts 인증 서비스 구현
   - 회원가입 (bcrypt 비밀번호 해싱)
   - 로그인 (JWT 토큰 발급)
   - 비밀번호 검증
-- [ ] T039 [P] [US4] backend/src/middleware/auth.ts JWT 인증 미들웨어 구현
-- [ ] T040 [US4] backend/src/api/auth.ts 인증 API 라우트 구현
+- [X] T039 [P] [US4] backend/src/middleware/auth.ts JWT 인증 미들웨어 구현
+- [X] T040 [US4] backend/src/api/auth.ts 인증 API 라우트 구현
   - POST /api/auth/signup - 회원가입
   - POST /api/auth/login - 로그인
   - GET /api/auth/me - 현재 사용자 정보
-- [ ] T041 [US4] backend/src/app.ts에 auth 라우트 등록
+- [X] T041 [US4] backend/src/app.ts에 auth 라우트 등록
 
 ### 백엔드 구현 - 히스토리
 
-- [ ] T042 [US4] backend/src/api/history.ts 히스토리 API 라우트 구현
+- [X] T042 [US4] backend/src/api/history.ts 히스토리 API 라우트 구현
   - GET /api/history - 추천 히스토리 목록 조회
   - GET /api/history/:id - 추천 히스토리 상세 조회
-- [ ] T043 [US4] backend/src/api/price.ts 가격 추천 시 로그인 사용자인 경우 userId 연결
-- [ ] T044 [US4] backend/src/app.ts에 history 라우트 등록
+- [X] T043 [US4] backend/src/api/price.ts 가격 추천 시 로그인 사용자인 경우 userId 연결
+- [X] T044 [US4] backend/src/app.ts에 history 라우트 등록
 
 ### 프론트엔드 구현 - 인증
 
-- [ ] T045 [P] [US4] frontend/lib/auth.ts NextAuth.js 설정 구현
+- [X] T045 [P] [US4] frontend/lib/auth.ts NextAuth.js 설정 구현
   - Credentials Provider (이메일/비밀번호)
   - JWT 세션 전략
-- [ ] T046 [P] [US4] frontend/app/(auth)/login/page.tsx 로그인 페이지 구현
-- [ ] T047 [P] [US4] frontend/app/(auth)/signup/page.tsx 회원가입 페이지 구현
-- [ ] T048 [US4] frontend/components/Header.tsx에 로그인/로그아웃 버튼 추가
+- [X] T046 [P] [US4] frontend/app/(auth)/login/page.tsx 로그인 페이지 구현
+- [X] T047 [P] [US4] frontend/app/(auth)/signup/page.tsx 회원가입 페이지 구현
+- [X] T048 [US4] frontend/components/Header.tsx에 로그인/로그아웃 버튼 추가
 
 ### 프론트엔드 구현 - 히스토리
 
-- [ ] T049 [US4] frontend/app/history/page.tsx 히스토리 목록 페이지 구현
+- [X] T049 [US4] frontend/app/history/page.tsx 히스토리 목록 페이지 구현
   - 날짜순 정렬
   - 제품명, 추천가격, 조회일 표시
-- [ ] T050 [US4] frontend/app/history/[id]/page.tsx 히스토리 상세 페이지 구현
+- [X] T050 [US4] frontend/app/history/[id]/page.tsx 히스토리 상세 페이지 구현
   - 입력했던 제품 정보 표시
   - 추천 결과 표시
   - 당시 시세 비교 정보 표시
