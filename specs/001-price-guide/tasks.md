@@ -132,25 +132,25 @@
 
 ### 백엔드 구현
 
-- [ ] T033 [P] [US3] backend/src/services/imageUpload.ts S3 이미지 업로드 서비스 구현
+- [X] T033 [P] [US3] backend/src/services/imageUpload.ts S3 이미지 업로드 서비스 구현
   - Multer로 파일 수신
   - Sharp로 이미지 최적화 (리사이징, WebP 변환)
   - S3 업로드 및 URL 반환
   - 파일 형식 검증 (JPG, PNG만 허용)
   - 파일 크기 제한 (10MB)
-- [ ] T034 [US3] backend/src/api/upload.ts 이미지 업로드 API 라우트 구현
+- [X] T034 [US3] backend/src/api/upload.ts 이미지 업로드 API 라우트 구현
   - POST /api/upload - 이미지 업로드
   - DELETE /api/upload/:key - 이미지 삭제
-- [ ] T035 [US3] backend/src/app.ts에 upload 라우트 등록
+- [X] T035 [US3] backend/src/app.ts에 upload 라우트 등록
 
 ### 프론트엔드 구현
 
-- [ ] T036 [US3] frontend/components/ImageUpload.tsx 이미지 업로드 컴포넌트 구현
+- [X] T036 [US3] frontend/components/ImageUpload.tsx 이미지 업로드 컴포넌트 구현
   - 파일 선택 버튼
   - 이미지 미리보기
   - 삭제 버튼
   - 형식/크기 오류 메시지 표시
-- [ ] T037 [US3] frontend/components/PriceForm.tsx에 ImageUpload 컴포넌트 통합
+- [X] T037 [US3] frontend/components/PriceForm.tsx에 ImageUpload 컴포넌트 통합
 
 **체크포인트**: 사용자 스토리 3 완료 - 사진 업로드 및 미리보기 가능
 

@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { errorHandler } from './middleware/errorHandler.js';
 import priceRouter from './api/price.js';
+import uploadRouter from './api/upload.js';
 
 // 환경 변수 로드
 dotenv.config();
@@ -25,9 +26,9 @@ app.get('/api/health', (_req: Request, res: Response) => {
 
 // API 라우트 등록
 app.use('/api/price', priceRouter);
+app.use('/api/upload', uploadRouter);
 // app.use('/api/auth', authRouter);
 // app.use('/api/history', historyRouter);
-// app.use('/api/upload', uploadRouter);
 
 // 404 처리
 app.use((_req: Request, res: Response) => {

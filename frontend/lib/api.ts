@@ -263,7 +263,8 @@ export async function uploadImage(file: File): Promise<ImageUploadResponse> {
     throw new ApiException(response.status, data as ApiError);
   }
 
-  return data as ImageUploadResponse;
+  // 백엔드 응답 형식: { success: true, data: { key, url } }
+  return data.data as ImageUploadResponse;
 }
 
 // 이미지 삭제

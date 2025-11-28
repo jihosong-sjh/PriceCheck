@@ -8,9 +8,10 @@ import {
   CATEGORIES,
   CONDITIONS,
 } from '@/lib/types';
+import ImageUpload, { type UploadedImage } from './ImageUpload';
 
 interface PriceFormProps {
-  onSubmit: (data: PriceRecommendRequest) => void;
+  onSubmit: (data: PriceRecommendRequest, imageKeys?: string[]) => void;
   isLoading?: boolean;
 }
 
@@ -19,6 +20,7 @@ export default function PriceForm({ onSubmit, isLoading = false }: PriceFormProp
   const [productName, setProductName] = useState('');
   const [modelName, setModelName] = useState('');
   const [condition, setCondition] = useState<Condition | ''>('');
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [errors, setErrors] = useState<{
     category?: string;
     productName?: string;
@@ -51,12 +53,21 @@ export default function PriceForm({ onSubmit, isLoading = false }: PriceFormProp
       return;
     }
 
-    onSubmit({
-      category: category as Category,
-      productName: productName.trim(),
-      modelName: modelName.trim() || undefined,
-      condition: condition as Condition,
-    });
+    const imageKeys = uploadedImages.map((img) => img.key);
+
+    onSubmit(
+      {
+        category: category as Category,
+        productName: productName.trim(),
+        modelName: modelName.trim() || undefined,
+        condition: condition as Condition,
+      },
+      imageKeys.length > 0 ? imageKeys : undefined
+    );
+  };
+
+  const handleImageChange = (images: UploadedImage[]) => {
+    setUploadedImages(images);
   };
 
   return (
@@ -156,6 +167,20 @@ export default function PriceForm({ onSubmit, isLoading = false }: PriceFormProp
           ))}
         </div>
         {errors.condition && <p className="input-error mt-2">{errors.condition}</p>}
+      </div>
+
+      {/* 제품 사진 업로드 (선택) */}
+      <div className="input-group">
+        <label className="input-label">
+          제품 사진 <span className="text-gray-400">(선택)</span>
+        </label>
+        <ImageUpload
+          onImageChange={handleImageChange}
+          maxImages={5}
+        />
+        <p className="input-help mt-2">
+          제품 사진을 업로드하면 향후 AI 분석 기능에 활용될 수 있습니다
+        </p>
       </div>
 
       {/* 제출 버튼 */}
