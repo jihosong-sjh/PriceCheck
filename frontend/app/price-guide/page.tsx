@@ -140,8 +140,8 @@ export default function PriceGuidePage() {
     <div className="container-narrow py-8 md:py-12">
       {/* 페이지 헤더 */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">중고 전자제품 가격 가이드</h1>
-        <p className="text-gray-600">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">중고 전자제품 가격 가이드</h1>
+        <p className="text-gray-600 dark:text-gray-300">
           제품 사진을 업로드하면 AI가 자동으로 제품을 인식합니다
           <br className="hidden sm:block" />
           또는 직접 제품 정보를 입력해주세요
@@ -152,16 +152,16 @@ export default function PriceGuidePage() {
       {viewState === 'form' ? (
         <div className="space-y-6">
           {/* 이미지 업로드 섹션 */}
-          <div className="card bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+          <div className="card bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 border-blue-200 dark:border-gray-600">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
                 사진으로 빠른 입력
               </h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                 제품 사진을 업로드하고 AI 인식 버튼을 누르면 제품 정보가 자동으로 입력됩니다
               </p>
             </div>
@@ -224,10 +224,10 @@ export default function PriceGuidePage() {
           {/* 구분선 */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
+              <div className="w-full border-t border-gray-300 dark:border-gray-600" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-gray-50 text-gray-500">또는 직접 입력</span>
+              <span className="px-4 bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400">또는 직접 입력</span>
             </div>
           </div>
 
@@ -255,10 +255,10 @@ export default function PriceGuidePage() {
       {/* 사용 안내 */}
       {viewState === 'form' && (
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-start gap-3 p-4 bg-white rounded-lg border border-gray-200">
-            <div className="flex-shrink-0 w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+          <div className="flex items-start gap-3 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex-shrink-0 w-10 h-10 bg-primary-100 dark:bg-primary-900/50 rounded-full flex items-center justify-center">
               <svg
-                className="w-5 h-5 text-primary-600"
+                className="w-5 h-5 text-primary-600 dark:text-primary-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -272,17 +272,17 @@ export default function PriceGuidePage() {
               </svg>
             </div>
             <div>
-              <h3 className="font-medium text-gray-900">AI 제품 인식</h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <h3 className="font-medium text-gray-900 dark:text-white">AI 제품 인식</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 사진만 올리면 AI가 제품을 자동으로 인식합니다
               </p>
             </div>
           </div>
 
-          <div className="flex items-start gap-3 p-4 bg-white rounded-lg border border-gray-200">
-            <div className="flex-shrink-0 w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+          <div className="flex items-start gap-3 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex-shrink-0 w-10 h-10 bg-primary-100 dark:bg-primary-900/50 rounded-full flex items-center justify-center">
               <svg
-                className="w-5 h-5 text-primary-600"
+                className="w-5 h-5 text-primary-600 dark:text-primary-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -296,17 +296,17 @@ export default function PriceGuidePage() {
               </svg>
             </div>
             <div>
-              <h3 className="font-medium text-gray-900">실시간 시세 분석</h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <h3 className="font-medium text-gray-900 dark:text-white">실시간 시세 분석</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 주요 중고거래 플랫폼의 최신 시세를 분석합니다
               </p>
             </div>
           </div>
 
-          <div className="flex items-start gap-3 p-4 bg-white rounded-lg border border-gray-200">
-            <div className="flex-shrink-0 w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+          <div className="flex items-start gap-3 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <div className="flex-shrink-0 w-10 h-10 bg-primary-100 dark:bg-primary-900/50 rounded-full flex items-center justify-center">
               <svg
-                className="w-5 h-5 text-primary-600"
+                className="w-5 h-5 text-primary-600 dark:text-primary-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -320,8 +320,8 @@ export default function PriceGuidePage() {
               </svg>
             </div>
             <div>
-              <h3 className="font-medium text-gray-900">가격 범위 제공</h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <h3 className="font-medium text-gray-900 dark:text-white">가격 범위 제공</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 최저-최고 가격 범위로 협상 여지를 파악합니다
               </p>
             </div>

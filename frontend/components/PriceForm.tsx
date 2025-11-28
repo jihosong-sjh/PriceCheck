@@ -176,13 +176,13 @@ export default function PriceForm({
               }}
               className={`p-4 rounded-lg border-2 transition-all ${
                 condition === cond.code
-                  ? 'border-primary-600 bg-primary-50 text-primary-700'
-                  : 'border-gray-200 hover:border-gray-300 bg-white'
+                  ? 'border-primary-600 bg-primary-50 text-primary-700 dark:border-primary-400 dark:bg-primary-900/50 dark:text-primary-300'
+                  : 'border-gray-200 hover:border-gray-300 bg-white dark:border-gray-600 dark:hover:border-gray-500 dark:bg-gray-800'
               } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               disabled={isLoading}
             >
-              <div className="font-semibold text-lg">{cond.name}</div>
-              <div className="text-xs text-gray-500 mt-1">{cond.description}</div>
+              <div className={`font-semibold text-lg ${condition === cond.code ? '' : 'dark:text-white'}`}>{cond.name}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{cond.description}</div>
             </button>
           ))}
         </div>
