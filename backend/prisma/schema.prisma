@@ -17,6 +17,8 @@ enum Category {
   TABLET      // 태블릿
   SMARTWATCH  // 스마트워치
   EARPHONE    // 이어폰/헤드폰
+  SPEAKER     // 블루투스 스피커
+  MONITOR     // 모니터
 }
 
 // 제품 상태 Enum

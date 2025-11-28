@@ -70,6 +70,25 @@ const CATEGORY_KEYWORDS: Record<Category, string[]> = {
     // 한글
     '이어폰', '헤드폰', '에어팟', '버즈', '이어버드', '헤드셋',
   ],
+  SPEAKER: [
+    // 영문 (Vision API 라벨)
+    'speaker', 'bluetooth speaker', 'wireless speaker', 'portable speaker',
+    'loudspeaker', 'sound box', 'audio speaker', 'smart speaker',
+    'jbl', 'bose', 'marshall', 'harman kardon', 'soundlink',
+    'flip', 'charge', 'xtreme', 'boom', 'megaboom', 'soundcore',
+    // 한글
+    '스피커', '블루투스 스피커', '무선 스피커', '포터블 스피커',
+    '블루투스스피커', '무선스피커', '사운드바',
+  ],
+  MONITOR: [
+    // 영문 (Vision API 라벨)
+    'monitor', 'computer monitor', 'display', 'lcd monitor', 'led monitor',
+    'gaming monitor', 'ultrawide', 'curved monitor', 'screen',
+    'ultragear', 'odyssey', 'ultrasharp', 'predator', 'nitro',
+    // 한글
+    '모니터', '컴퓨터 모니터', '게이밍 모니터', '게이밍모니터',
+    '울트라와이드', '커브드 모니터', '디스플레이',
+  ],
 };
 
 // 브랜드별 제품 카테고리 매핑 (브랜드 감지 시 카테고리 추론에 사용)
@@ -87,6 +106,33 @@ const BRAND_PRODUCT_HINTS: Record<string, { keywords: string[]; category: Catego
     { keywords: ['galaxy book', '갤럭시 북'], category: 'LAPTOP' },
     { keywords: ['galaxy watch', '갤럭시 워치'], category: 'SMARTWATCH' },
     { keywords: ['galaxy buds', '갤럭시 버즈', 'buds'], category: 'EARPHONE' },
+    { keywords: ['odyssey', 'viewfinity', 'smart monitor'], category: 'MONITOR' },
+  ],
+  LG: [
+    { keywords: ['ultragear', '27gp', '27gn', '32gp', 'ultrawide', '34wk', '38wn'], category: 'MONITOR' },
+  ],
+  Dell: [
+    { keywords: ['u27', 'u24', 'u32', 's27', 's24', 'ultrasharp', 'alienware monitor'], category: 'MONITOR' },
+  ],
+  ASUS: [
+    { keywords: ['rog swift', 'tuf gaming', 'proart', 'vg', 'pg', 'xg'], category: 'MONITOR' },
+  ],
+  JBL: [
+    { keywords: ['flip', 'charge', 'xtreme', 'boombox', 'pulse', 'clip', 'go', 'partybox'], category: 'SPEAKER' },
+  ],
+  Bose: [
+    { keywords: ['soundlink', 'portable', 'home speaker'], category: 'SPEAKER' },
+    { keywords: ['quietcomfort', 'qc', 'sport'], category: 'EARPHONE' },
+  ],
+  Marshall: [
+    { keywords: ['stanmore', 'acton', 'woburn', 'emberton', 'willen', 'kilburn'], category: 'SPEAKER' },
+    { keywords: ['major', 'minor', 'mid', 'mode', 'monitor ii'], category: 'EARPHONE' },
+  ],
+  'Harman Kardon': [
+    { keywords: ['aura', 'onyx', 'citation', 'soundsticks', 'go + play'], category: 'SPEAKER' },
+  ],
+  BenQ: [
+    { keywords: ['zowie', 'mobiuz', 'ex', 'xl', 'pd', 'sw', 'gw', 'ew'], category: 'MONITOR' },
   ],
 };
 
@@ -95,9 +141,9 @@ const BRAND_KEYWORDS = [
   // Apple
   { brand: 'Apple', keywords: ['apple', 'iphone', 'ipad', 'macbook', 'airpods', 'apple watch'] },
   // Samsung
-  { brand: 'Samsung', keywords: ['samsung', 'galaxy', '삼성', '갤럭시'] },
+  { brand: 'Samsung', keywords: ['samsung', 'galaxy', 'odyssey', '삼성', '갤럭시'] },
   // LG
-  { brand: 'LG', keywords: ['lg', 'gram', '엘지'] },
+  { brand: 'LG', keywords: ['lg', 'gram', 'ultragear', 'ultrawide', '엘지'] },
   // Sony
   { brand: 'Sony', keywords: ['sony', 'xperia', '소니'] },
   // Xiaomi
@@ -113,13 +159,33 @@ const BRAND_KEYWORDS = [
   // HP
   { brand: 'HP', keywords: ['hp', 'hewlett'] },
   // Dell
-  { brand: 'Dell', keywords: ['dell', 'inspiron', 'xps'] },
+  { brand: 'Dell', keywords: ['dell', 'inspiron', 'xps', 'ultrasharp', 'alienware'] },
   // ASUS
-  { brand: 'ASUS', keywords: ['asus', 'rog', 'zenbook', '아수스'] },
+  { brand: 'ASUS', keywords: ['asus', 'rog', 'zenbook', 'rog swift', 'tuf gaming', 'proart', '아수스'] },
   // Bose
-  { brand: 'Bose', keywords: ['bose', '보스'] },
+  { brand: 'Bose', keywords: ['bose', 'soundlink', '보스'] },
   // JBL
-  { brand: 'JBL', keywords: ['jbl'] },
+  { brand: 'JBL', keywords: ['jbl', 'flip', 'charge', 'xtreme', 'boombox'] },
+  // Marshall
+  { brand: 'Marshall', keywords: ['marshall', 'stanmore', 'acton', 'woburn', '마샬'] },
+  // Harman Kardon
+  { brand: 'Harman Kardon', keywords: ['harman kardon', 'harman', 'aura studio', 'onyx', '하만카든'] },
+  // Bang & Olufsen
+  { brand: 'Bang & Olufsen', keywords: ['bang & olufsen', 'b&o', 'beosound', 'beoplay', '뱅앤올룹슨'] },
+  // Ultimate Ears
+  { brand: 'Ultimate Ears', keywords: ['ultimate ears', 'ue boom', 'megaboom', 'wonderboom'] },
+  // Anker
+  { brand: 'Anker', keywords: ['anker', 'soundcore', '앵커'] },
+  // BenQ
+  { brand: 'BenQ', keywords: ['benq', 'zowie', 'mobiuz', '벤큐'] },
+  // ViewSonic
+  { brand: 'ViewSonic', keywords: ['viewsonic', '뷰소닉'] },
+  // Acer
+  { brand: 'Acer', keywords: ['acer', 'predator', 'nitro', '에이서'] },
+  // AOC
+  { brand: 'AOC', keywords: ['aoc', 'agon'] },
+  // MSI
+  { brand: 'MSI', keywords: ['msi', 'optix', 'mag'] },
 ];
 
 // 모델명 패턴 (제품별 구체적 패턴 우선)
@@ -142,6 +208,39 @@ const MODEL_PATTERNS = [
   /galaxy\s*buds\s*(\d+)?\s*(pro|plus|live|fe)?/i,
   // Pixel
   /pixel\s*(\d+)\s*(pro|a)?/i,
+
+  // === SPEAKER 패턴 ===
+  // JBL (JBL Flip 6, JBL Charge 5, JBL Xtreme 3 등)
+  /jbl\s*(flip|charge|xtreme|boombox|pulse|clip|go|partybox)\s*(\d+)?(\s*plus|\s*pro)?/i,
+  // Bose SoundLink (Bose SoundLink Flex, Bose SoundLink Mini II 등)
+  /bose\s*(soundlink|portable|home\s*speaker)\s*(flex|mini|revolve|color|micro)?\s*(ii|iii|2|3|\+)?/i,
+  // Marshall (Marshall Stanmore II, Marshall Acton III 등)
+  /marshall\s*(stanmore|acton|woburn|emberton|willen|kilburn|middleton)\s*(ii|iii|iv|2|3|4)?/i,
+  // Harman Kardon (Harman Kardon Aura Studio 3 등)
+  /harman\s*kardon\s*(aura\s*studio|onyx\s*studio|soundsticks|citation|go\s*\+?\s*play)\s*(\d+)?/i,
+  // Bang & Olufsen (Beosound A1 2nd Gen 등)
+  /b(?:ang)?\s*&?\s*o(?:lufsen)?\s*(beosound|beoplay|beolit)\s*(a\d+|p\d+)?\s*(2nd\s*gen)?/i,
+  // Ultimate Ears (UE Boom 3, UE Megaboom 3 등)
+  /u(?:ltimate\s*)?e(?:ars)?\s*(boom|megaboom|wonderboom|hyperboom)\s*(\d+)?/i,
+  // Anker Soundcore (Soundcore Motion+ 등)
+  /(?:anker\s*)?(soundcore)\s*(motion|flare|mini|select|boost)\s*(\+|plus|pro|2)?/i,
+
+  // === MONITOR 패턴 ===
+  // LG UltraGear/UltraWide (LG 27GP850, LG 34WK650 등)
+  /lg\s*(\d{2})(gp|gn|gl|wk|wn|wl|ul|up|ep|eq|uk|un|um)(\d{3,4})[a-z]?/i,
+  // Samsung Odyssey (Samsung Odyssey G7 27", Samsung S27AG50 등)
+  /samsung\s*(odyssey\s*)?(g\d+|neo\s*g\d+|s\d{2}[a-z]{2}\d{2})/i,
+  // Dell UltraSharp (Dell U2723QE, Dell S2722DGM 등)
+  /dell\s*(ultrasharp\s*)?(u|s|p|e|se|aw)(\d{4})([a-z]{1,3})?/i,
+  // ASUS ROG Swift (ASUS ROG Swift PG279Q, ASUS VG248QE 등)
+  /asus\s*(rog\s*swift\s*|tuf\s*gaming\s*|proart\s*)?(pg|vg|xg|pa)(\d{3,4})([a-z]{1,3})?/i,
+  // BenQ (BenQ ZOWIE XL2546K, BenQ EW2780Q 등)
+  /benq\s*(zowie\s*|mobiuz\s*)?(xl|ex|ew|pd|gw|sw)(\d{4})([a-z]{1,2})?/i,
+  // ViewSonic (ViewSonic VX2758-2KP-MHD 등)
+  /viewsonic\s*(vx|xg|vp|va)(\d{4})([a-z0-9-]*)?/i,
+  // MSI (MSI Optix MAG274QRF-QD 등)
+  /msi\s*(optix\s*|mag\s*)?(mag|mpg|ps)(\d{3})([a-z0-9-]*)?/i,
+
   // 구체적인 모델 번호 (SM-S928, A2894 등) - 날짜 패턴 제외
   /\b(SM|GT|SCH|SGH|SPH)-?[A-Z]?\d{3,4}[A-Z]?\b/i,
   /\bA\d{4}\b/i, // Apple 모델번호 (A2894 등)
@@ -151,8 +250,8 @@ const MODEL_PATTERNS = [
 // 날짜 패턴 (모델명에서 제외)
 const DATE_PATTERNS = [
   /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[-\s]?\d{2,4}\b/i,
-  /\b\d{4}[-\/]\d{2}\b/,
-  /\b\d{2}[-\/]\d{4}\b/,
+  /\b\d{4}[-/]\d{2}\b/,
+  /\b\d{2}[-/]\d{4}\b/,
 ];
 
 /**
@@ -271,6 +370,8 @@ function detectCategory(text: string, brand: string | null): Category | null {
     TABLET: 0,
     SMARTWATCH: 0,
     EARPHONE: 0,
+    SPEAKER: 0,
+    MONITOR: 0,
   };
 
   // 키워드 매칭
@@ -385,6 +486,8 @@ function buildProductName(
       TABLET: '태블릿',
       SMARTWATCH: '스마트워치',
       EARPHONE: '이어폰',
+      SPEAKER: '블루투스 스피커',
+      MONITOR: '모니터',
     };
     parts.push(categoryNames[category]);
   }
