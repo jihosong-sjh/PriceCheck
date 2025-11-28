@@ -65,22 +65,22 @@
 
 ### 백엔드 구현 - 크롤러
 
-- [ ] T020 [P] [US1] backend/src/services/crawler/bunjang.ts 번개장터 크롤러 구현 (Playwright + Cheerio)
-- [ ] T021 [P] [US1] backend/src/services/crawler/joongonara.ts 중고나라 크롤러 구현 (Axios + Cheerio)
-- [ ] T022 [US1] backend/src/services/crawler/index.ts 크롤러 통합 관리자 구현
+- [X] T020 [P] [US1] backend/src/services/crawler/bunjang.ts 번개장터 크롤러 구현 (Playwright + Cheerio)
+- [X] T021 [P] [US1] backend/src/services/crawler/joongonara.ts 중고나라 크롤러 구현 (Axios + Cheerio)
+- [X] T022 [US1] backend/src/services/crawler/index.ts 크롤러 통합 관리자 구현
 
 ### 백엔드 구현 - 가격 계산
 
-- [ ] T023 [US1] backend/src/services/priceCalculator.ts 시세 분석 및 추천 가격 계산 로직 구현
+- [X] T023 [US1] backend/src/services/priceCalculator.ts 시세 분석 및 추천 가격 계산 로직 구현
   - 평균, 중앙값, 가격 범위 계산
   - 상태(상/중/하)에 따른 가격 조정
 
 ### 백엔드 구현 - API
 
-- [ ] T024 [US1] backend/src/api/price.ts 가격 추천 API 라우트 구현
+- [X] T024 [US1] backend/src/api/price.ts 가격 추천 API 라우트 구현
   - GET /api/price/categories - 카테고리 목록 조회
   - POST /api/price/recommend - 가격 추천 요청
-- [ ] T025 [US1] backend/src/app.ts에 price 라우트 등록
+- [X] T025 [US1] backend/src/app.ts에 price 라우트 등록
 
 ### 프론트엔드 구현
 

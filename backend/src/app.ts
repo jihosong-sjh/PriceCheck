@@ -2,6 +2,7 @@ import express, { type Express, type Request, type Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { errorHandler } from './middleware/errorHandler.js';
+import priceRouter from './api/price.js';
 
 // 환경 변수 로드
 dotenv.config();
@@ -22,8 +23,8 @@ app.get('/api/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// API 라우트 등록 (추후 추가)
-// app.use('/api/price', priceRouter);
+// API 라우트 등록
+app.use('/api/price', priceRouter);
 // app.use('/api/auth', authRouter);
 // app.use('/api/history', historyRouter);
 // app.use('/api/upload', uploadRouter);
