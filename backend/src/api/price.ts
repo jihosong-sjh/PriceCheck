@@ -6,6 +6,7 @@
 
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { ZodError } from 'zod';
+import { PrismaClient, type Category, type Condition } from '@prisma/client';
 import {
   priceRecommendRequestSchema,
   CategoryEnum,
@@ -15,7 +16,9 @@ import {
 } from '../utils/validators.js';
 import crawler from '../services/crawler/index.js';
 import priceCalculator from '../services/priceCalculator.js';
+import { optionalAuth } from '../middleware/auth.js';
 
+const prisma = new PrismaClient();
 const router = Router();
 
 // 카테고리 정보 타입
@@ -28,6 +31,7 @@ interface CategoryInfo {
 interface PriceRecommendResponse {
   success: boolean;
   data: {
+    id?: string;
     input: {
       category: string;
       categoryName: string;
@@ -91,9 +95,11 @@ router.get('/categories', (_req: Request, res: Response) => {
 /**
  * POST /api/price/recommend
  * 가격 추천 요청
+ * - 로그인 사용자인 경우 히스토리에 저장하고 userId 연결
  */
 router.post(
   '/recommend',
+  optionalAuth,
   async (
     req: Request,
     res: Response<PriceRecommendResponse | ErrorResponse>,
@@ -149,10 +155,38 @@ router.post(
         });
       }
 
-      // 6. 성공 응답
+      // 6. 로그인 사용자인 경우 히스토리에 저장
+      let recommendationId: string | undefined;
+      const userId = req.user?.userId;
+
+      if (userId) {
+        try {
+          const recommendation = await prisma.priceRecommendation.create({
+            data: {
+              userId,
+              category: category as Category,
+              productName,
+              modelName,
+              condition: condition as Condition,
+              recommendedPrice: calculation.recommendedPrice,
+              priceMin: calculation.priceMin,
+              priceMax: calculation.priceMax,
+              marketDataSnapshot: JSON.parse(JSON.stringify(marketDataSnapshot)),
+            },
+          });
+          recommendationId = recommendation.id;
+          console.log(`[가격 추천] 히스토리 저장 완료 - ID: ${recommendationId}`);
+        } catch (saveError) {
+          // 히스토리 저장 실패는 로깅만 하고 응답은 정상 처리
+          console.error('[가격 추천] 히스토리 저장 실패:', saveError);
+        }
+      }
+
+      // 7. 성공 응답
       const response: PriceRecommendResponse = {
         success: true,
         data: {
+          id: recommendationId,
           input: {
             category,
             categoryName: CATEGORY_LABELS[category],

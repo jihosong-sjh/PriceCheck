@@ -164,24 +164,24 @@
 
 ### 백엔드 구현 - 인증
 
-- [ ] T038 [P] [US4] backend/src/services/auth.ts 인증 서비스 구현
+- [X] T038 [P] [US4] backend/src/services/auth.ts 인증 서비스 구현
   - 회원가입 (bcrypt 비밀번호 해싱)
   - 로그인 (JWT 토큰 발급)
   - 비밀번호 검증
-- [ ] T039 [P] [US4] backend/src/middleware/auth.ts JWT 인증 미들웨어 구현
-- [ ] T040 [US4] backend/src/api/auth.ts 인증 API 라우트 구현
+- [X] T039 [P] [US4] backend/src/middleware/auth.ts JWT 인증 미들웨어 구현
+- [X] T040 [US4] backend/src/api/auth.ts 인증 API 라우트 구현
   - POST /api/auth/signup - 회원가입
   - POST /api/auth/login - 로그인
   - GET /api/auth/me - 현재 사용자 정보
-- [ ] T041 [US4] backend/src/app.ts에 auth 라우트 등록
+- [X] T041 [US4] backend/src/app.ts에 auth 라우트 등록
 
 ### 백엔드 구현 - 히스토리
 
-- [ ] T042 [US4] backend/src/api/history.ts 히스토리 API 라우트 구현
+- [X] T042 [US4] backend/src/api/history.ts 히스토리 API 라우트 구현
   - GET /api/history - 추천 히스토리 목록 조회
   - GET /api/history/:id - 추천 히스토리 상세 조회
-- [ ] T043 [US4] backend/src/api/price.ts 가격 추천 시 로그인 사용자인 경우 userId 연결
-- [ ] T044 [US4] backend/src/app.ts에 history 라우트 등록
+- [X] T043 [US4] backend/src/api/price.ts 가격 추천 시 로그인 사용자인 경우 userId 연결
+- [X] T044 [US4] backend/src/app.ts에 history 라우트 등록
 
 ### 프론트엔드 구현 - 인증
 

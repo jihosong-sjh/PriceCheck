@@ -1,0 +1,184 @@
+/**
+ * 인증 서비스
+ * - 회원가입 (bcrypt 비밀번호 해싱)
+ * - 로그인 (JWT 토큰 발급)
+ * - 비밀번호 검증
+ */
+
+import bcrypt from 'bcryptjs';
+import jwt, { type SignOptions } from 'jsonwebtoken';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+// JWT 설정
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || '7d') as SignOptions['expiresIn'];
+
+// 비밀번호 해싱 설정
+const SALT_ROUNDS = 10;
+
+/**
+ * 사용자 정보 인터페이스 (비밀번호 제외)
+ */
+export interface UserInfo {
+  id: string;
+  email: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * JWT 페이로드 인터페이스
+ */
+export interface JwtPayload {
+  userId: string;
+  email: string;
+}
+
+/**
+ * 인증 결과 인터페이스
+ */
+export interface AuthResult {
+  user: UserInfo;
+  token: string;
+}
+
+/**
+ * 비밀번호를 해싱합니다.
+ */
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, SALT_ROUNDS);
+}
+
+/**
+ * 비밀번호를 검증합니다.
+ */
+export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+  return bcrypt.compare(password, hashedPassword);
+}
+
+/**
+ * JWT 토큰을 생성합니다.
+ */
+export function generateToken(payload: JwtPayload): string {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+}
+
+/**
+ * JWT 토큰을 검증하고 페이로드를 반환합니다.
+ */
+export function verifyToken(token: string): JwtPayload {
+  return jwt.verify(token, JWT_SECRET) as JwtPayload;
+}
+
+/**
+ * 회원가입
+ * - 이메일 중복 확인
+ * - 비밀번호 해싱
+ * - 사용자 생성
+ * - JWT 토큰 발급
+ */
+export async function signup(email: string, password: string): Promise<AuthResult> {
+  // 이메일 중복 확인
+  const existingUser = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (existingUser) {
+    throw new Error('이미 등록된 이메일입니다.');
+  }
+
+  // 비밀번호 해싱
+  const hashedPassword = await hashPassword(password);
+
+  // 사용자 생성
+  const user = await prisma.user.create({
+    data: {
+      email,
+      password: hashedPassword,
+    },
+    select: {
+      id: true,
+      email: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  // JWT 토큰 생성
+  const token = generateToken({ userId: user.id, email: user.email });
+
+  return { user, token };
+}
+
+/**
+ * 로그인
+ * - 이메일로 사용자 조회
+ * - 비밀번호 검증
+ * - JWT 토큰 발급
+ */
+export async function login(email: string, password: string): Promise<AuthResult> {
+  // 사용자 조회
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
+  }
+
+  // 비밀번호 검증
+  const isValidPassword = await verifyPassword(password, user.password);
+
+  if (!isValidPassword) {
+    throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
+  }
+
+  // JWT 토큰 생성
+  const token = generateToken({ userId: user.id, email: user.email });
+
+  return {
+    user: {
+      id: user.id,
+      email: user.email,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    },
+    token,
+  };
+}
+
+/**
+ * 사용자 ID로 사용자 정보 조회
+ */
+export async function getUserById(userId: string): Promise<UserInfo | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return user;
+}
+
+/**
+ * 이메일로 사용자 조회 (존재 여부 확인용)
+ */
+export async function getUserByEmail(email: string): Promise<UserInfo | null> {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      email: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return user;
+}
