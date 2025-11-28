@@ -42,16 +42,16 @@
 
 **⚠️ 중요**: 이 단계 완료 전에는 사용자 스토리 작업 시작 불가
 
-- [ ] T010 backend/src/app.ts Express 앱 진입점 및 기본 설정 구현
-- [ ] T011 [P] backend/src/middleware/errorHandler.ts 전역 에러 처리 미들웨어 구현
-- [ ] T012 [P] backend/src/utils/validators.ts 입력 검증 유틸리티 구현 (Zod 활용)
-- [ ] T013 [P] frontend/app/layout.tsx 공통 레이아웃 구현 (한국어 설정)
-- [ ] T014 [P] frontend/app/globals.css TailwindCSS 전역 스타일 설정
-- [ ] T015 [P] frontend/components/Header.tsx 헤더 컴포넌트 구현
-- [ ] T016 [P] frontend/components/Footer.tsx 푸터 컴포넌트 구현
-- [ ] T017 [P] frontend/lib/types.ts 공통 타입 정의 (Category, Condition, Platform 등)
-- [ ] T018 [P] frontend/lib/api.ts API 클라이언트 유틸리티 구현
-- [ ] T019 Prisma 마이그레이션 실행 및 클라이언트 생성 설정
+- [X] T010 backend/src/app.ts Express 앱 진입점 및 기본 설정 구현
+- [X] T011 [P] backend/src/middleware/errorHandler.ts 전역 에러 처리 미들웨어 구현
+- [X] T012 [P] backend/src/utils/validators.ts 입력 검증 유틸리티 구현 (Zod 활용)
+- [X] T013 [P] frontend/app/layout.tsx 공통 레이아웃 구현 (한국어 설정)
+- [X] T014 [P] frontend/app/globals.css TailwindCSS 전역 스타일 설정
+- [X] T015 [P] frontend/components/Header.tsx 헤더 컴포넌트 구현
+- [X] T016 [P] frontend/components/Footer.tsx 푸터 컴포넌트 구현
+- [X] T017 [P] frontend/lib/types.ts 공통 타입 정의 (Category, Condition, Platform 등)
+- [X] T018 [P] frontend/lib/api.ts API 클라이언트 유틸리티 구현
+- [X] T019 Prisma 마이그레이션 실행 및 클라이언트 생성 설정
 
 **체크포인트**: 기반 완료 - 이제 사용자 스토리 구현 시작 가능
 
