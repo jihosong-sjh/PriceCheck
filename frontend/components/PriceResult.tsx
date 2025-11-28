@@ -5,6 +5,7 @@ import {
   CATEGORY_LABELS,
   CONDITION_LABELS,
 } from '@/lib/types';
+import MarketComparison from './MarketComparison';
 
 interface PriceResultProps {
   result: PriceRecommendResponse | null;
@@ -121,6 +122,11 @@ export default function PriceResult({ result, error, onReset }: PriceResultProps
           )}
         </dl>
       </div>
+
+      {/* 시세 비교 정보 */}
+      {result.marketDataSnapshot && result.marketDataSnapshot.length > 0 && (
+        <MarketComparison marketData={result.marketDataSnapshot} />
+      )}
 
       {/* 가격 분석 안내 */}
       <div className="card bg-gray-50">

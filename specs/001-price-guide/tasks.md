@@ -108,17 +108,17 @@
 
 ### 백엔드 구현
 
-- [ ] T030 [US2] backend/src/api/price.ts 가격 추천 응답에 marketDataSnapshot 포함 확인
+- [X] T030 [US2] backend/src/api/price.ts 가격 추천 응답에 marketDataSnapshot 포함 확인
   - 최소 3개 이상 유사 매물 정보 반환
   - 가격, 상태, 플랫폼, 등록일, 원본 URL 포함
 
 ### 프론트엔드 구현
 
-- [ ] T031 [US2] frontend/components/MarketComparison.tsx 시세 비교 정보 컴포넌트 구현
+- [X] T031 [US2] frontend/components/MarketComparison.tsx 시세 비교 정보 컴포넌트 구현
   - 유사 매물 목록 테이블/카드 형태 표시
   - 플랫폼별 아이콘/색상 구분
   - 원본 링크 클릭 시 새 탭에서 열기
-- [ ] T032 [US2] frontend/components/PriceResult.tsx에 MarketComparison 컴포넌트 통합
+- [X] T032 [US2] frontend/components/PriceResult.tsx에 MarketComparison 컴포넌트 통합
 
 **체크포인트**: 사용자 스토리 2 완료 - 추천 가격 근거 확인 가능
 
