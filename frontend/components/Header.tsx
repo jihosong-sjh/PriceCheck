@@ -2,9 +2,15 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { data: session, status } = useSession();
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/' });
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -46,12 +52,28 @@ export default function Header() {
 
           {/* 데스크톱 버튼 */}
           <div className="hidden md:flex items-center gap-3">
-            <Link href="/login" className="btn-ghost no-underline">
-              로그인
-            </Link>
-            <Link href="/signup" className="btn-primary no-underline">
-              회원가입
-            </Link>
+            {status === 'loading' ? (
+              <div className="h-9 w-20 bg-gray-200 animate-pulse rounded-lg" />
+            ) : session ? (
+              <>
+                <span className="text-sm text-gray-600">{session.user?.email}</span>
+                <button
+                  onClick={handleSignOut}
+                  className="btn-ghost"
+                >
+                  로그아웃
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="btn-ghost no-underline">
+                  로그인
+                </Link>
+                <Link href="/signup" className="btn-primary no-underline">
+                  회원가입
+                </Link>
+              </>
+            )}
           </div>
 
           {/* 모바일 메뉴 버튼 */}
@@ -92,20 +114,39 @@ export default function Header() {
                 히스토리
               </Link>
               <hr className="my-2 border-gray-200" />
-              <Link
-                href="/login"
-                className="px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg no-underline"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                로그인
-              </Link>
-              <Link
-                href="/signup"
-                className="mx-4 btn-primary text-center no-underline"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                회원가입
-              </Link>
+              {session ? (
+                <>
+                  <div className="px-4 py-2 text-sm text-gray-500">
+                    {session.user?.email}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      handleSignOut();
+                    }}
+                    className="px-4 py-2 text-left text-gray-600 hover:bg-gray-50 rounded-lg"
+                  >
+                    로그아웃
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg no-underline"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    로그인
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="mx-4 btn-primary text-center no-underline"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    회원가입
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
         )}

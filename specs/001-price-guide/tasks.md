@@ -185,19 +185,19 @@
 
 ### 프론트엔드 구현 - 인증
 
-- [ ] T045 [P] [US4] frontend/lib/auth.ts NextAuth.js 설정 구현
+- [X] T045 [P] [US4] frontend/lib/auth.ts NextAuth.js 설정 구현
   - Credentials Provider (이메일/비밀번호)
   - JWT 세션 전략
-- [ ] T046 [P] [US4] frontend/app/(auth)/login/page.tsx 로그인 페이지 구현
-- [ ] T047 [P] [US4] frontend/app/(auth)/signup/page.tsx 회원가입 페이지 구현
-- [ ] T048 [US4] frontend/components/Header.tsx에 로그인/로그아웃 버튼 추가
+- [X] T046 [P] [US4] frontend/app/(auth)/login/page.tsx 로그인 페이지 구현
+- [X] T047 [P] [US4] frontend/app/(auth)/signup/page.tsx 회원가입 페이지 구현
+- [X] T048 [US4] frontend/components/Header.tsx에 로그인/로그아웃 버튼 추가
 
 ### 프론트엔드 구현 - 히스토리
 
-- [ ] T049 [US4] frontend/app/history/page.tsx 히스토리 목록 페이지 구현
+- [X] T049 [US4] frontend/app/history/page.tsx 히스토리 목록 페이지 구현
   - 날짜순 정렬
   - 제품명, 추천가격, 조회일 표시
-- [ ] T050 [US4] frontend/app/history/[id]/page.tsx 히스토리 상세 페이지 구현
+- [X] T050 [US4] frontend/app/history/[id]/page.tsx 히스토리 상세 페이지 구현
   - 입력했던 제품 정보 표시
   - 추천 결과 표시
   - 당시 시세 비교 정보 표시

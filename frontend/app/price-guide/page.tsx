@@ -1,18 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import PriceForm from '@/components/PriceForm';
 import PriceResult from '@/components/PriceResult';
-import { requestPriceRecommend, ApiException } from '@/lib/api';
+import { requestPriceRecommend, ApiException, setAuthToken } from '@/lib/api';
 import type { PriceRecommendRequest, PriceRecommendResponse } from '@/lib/types';
 
 type ViewState = 'form' | 'result';
 
 export default function PriceGuidePage() {
+  const { data: session } = useSession();
   const [viewState, setViewState] = useState<ViewState>('form');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<PriceRecommendResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // 세션의 accessToken을 API 클라이언트에 설정
+  useEffect(() => {
+    if (session?.accessToken) {
+      setAuthToken(session.accessToken);
+    }
+  }, [session?.accessToken]);
 
   const handleSubmit = async (data: PriceRecommendRequest) => {
     setIsLoading(true);
