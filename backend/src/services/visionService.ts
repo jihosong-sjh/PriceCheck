@@ -19,8 +19,21 @@ async function downloadImageAsBase64(imageUrl: string): Promise<string> {
   return buffer.toString('base64');
 }
 
-// Vision API 클라이언트 (환경변수 GOOGLE_APPLICATION_CREDENTIALS로 자동 인증)
-const client = new vision.ImageAnnotatorClient();
+/**
+ * Vision API 클라이언트 생성
+ * - GOOGLE_CREDENTIALS_JSON 환경변수가 있으면 JSON 파싱하여 사용 (Railway 등 클라우드 배포용)
+ * - 없으면 GOOGLE_APPLICATION_CREDENTIALS 파일 경로 방식 사용 (로컬 개발용)
+ */
+function createVisionClient(): vision.ImageAnnotatorClient {
+  if (process.env.GOOGLE_CREDENTIALS_JSON) {
+    const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
+    return new vision.ImageAnnotatorClient({ credentials });
+  }
+  // 기존 방식: GOOGLE_APPLICATION_CREDENTIALS 환경변수로 파일 경로 지정
+  return new vision.ImageAnnotatorClient();
+}
+
+const client = createVisionClient();
 
 // 인식 결과 타입
 export interface RecognitionResult {
