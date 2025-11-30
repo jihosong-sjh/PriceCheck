@@ -4,8 +4,8 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const { nextUrl } = req;
 
-  // 히스토리 페이지는 로그인 필수
-  if (nextUrl.pathname.startsWith('/history')) {
+  // 히스토리, 찜 목록 페이지는 로그인 필수
+  if (nextUrl.pathname.startsWith('/history') || nextUrl.pathname.startsWith('/bookmarks')) {
     if (!isLoggedIn) {
       return Response.redirect(new URL('/login', nextUrl));
     }

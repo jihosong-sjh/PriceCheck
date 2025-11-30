@@ -6,6 +6,12 @@ import priceRouter from './api/price.js';
 import uploadRouter from './api/upload.js';
 import authRouter from './api/auth.js';
 import historyRouter from './api/history.js';
+import bookmarkRouter from './api/bookmark.js';
+import recognizeRouter from './api/recognize.js';
+import alertRouter from './api/alert.js';
+import notificationRouter from './api/notification.js';
+import searchRouter from './api/search.js';
+import { startPriceAlertJob } from './jobs/priceAlertJob.js';
 
 // 환경 변수 로드
 dotenv.config();
@@ -31,6 +37,11 @@ app.use('/api/price', priceRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/history', historyRouter);
+app.use('/api/bookmarks', bookmarkRouter);
+app.use('/api/recognize', recognizeRouter);
+app.use('/api/alerts', alertRouter);
+app.use('/api/notifications', notificationRouter);
+app.use('/api/search', searchRouter);
 
 // 404 처리
 app.use((_req: Request, res: Response) => {
@@ -43,6 +54,11 @@ app.use(errorHandler);
 // 서버 시작
 app.listen(PORT, () => {
   console.log(`서버가 http://localhost:${PORT} 에서 실행 중입니다.`);
+
+  // 가격 알림 체커 작업 시작 (프로덕션 환경에서만)
+  if (process.env.NODE_ENV === 'production' || process.env.ENABLE_ALERT_JOB === 'true') {
+    startPriceAlertJob();
+  }
 });
 
 export default app;

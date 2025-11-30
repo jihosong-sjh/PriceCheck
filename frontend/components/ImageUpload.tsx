@@ -6,9 +6,11 @@
  * - 이미지 미리보기
  * - 삭제 버튼
  * - 형식/크기 오류 메시지 표시
+ * - AI 제품 인식 기능
  */
 import { useState, useRef, useCallback } from 'react';
-import { uploadImage, deleteImage } from '@/lib/api';
+import { uploadImage, deleteImage, recognizeProduct, ApiException } from '@/lib/api';
+import type { RecognitionResult } from '@/lib/types';
 
 // 허용된 파일 형식
 const ALLOWED_TYPES = ['image/jpeg', 'image/png'];
@@ -23,18 +25,24 @@ export interface UploadedImage {
 
 interface ImageUploadProps {
   onImageChange?: (images: UploadedImage[]) => void;
+  onRecognize?: (result: RecognitionResult) => void;
   maxImages?: number;
   className?: string;
+  showRecognizeButton?: boolean;
 }
 
 export default function ImageUpload({
   onImageChange,
+  onRecognize,
   maxImages = 5,
   className = '',
+  showRecognizeButton = true,
 }: ImageUploadProps) {
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isRecognizing, setIsRecognizing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [recognitionSuccess, setRecognitionSuccess] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 파일 검증
@@ -169,12 +177,59 @@ export default function ImageUpload({
     []
   );
 
+  // AI 제품 인식 핸들러
+  const handleRecognize = useCallback(async () => {
+    if (images.length === 0) {
+      setError('인식할 이미지를 먼저 업로드해주세요.');
+      return;
+    }
+
+    // 첫 번째 이미지 사용
+    const imageUrl = images[0].url;
+
+    setIsRecognizing(true);
+    setError(null);
+    setRecognitionSuccess(null);
+
+    try {
+      const result = await recognizeProduct(imageUrl);
+
+      if (result.productName || result.category) {
+        setRecognitionSuccess(
+          `인식 완료! ${result.productName || '제품'} (신뢰도: ${result.confidence}%)`
+        );
+        onRecognize?.(result);
+      } else {
+        setError('제품을 인식할 수 없습니다. 다른 이미지를 사용해주세요.');
+      }
+    } catch (err) {
+      console.error('제품 인식 실패:', err);
+      if (err instanceof ApiException) {
+        setError(err.data.message || '제품 인식에 실패했습니다.');
+      } else {
+        setError('제품 인식 중 오류가 발생했습니다.');
+      }
+    } finally {
+      setIsRecognizing(false);
+    }
+  }, [images, onRecognize]);
+
   return (
     <div className={`space-y-4 ${className}`}>
       {/* 에러 메시지 */}
       {error && (
         <div className="rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-700">
           {error}
+        </div>
+      )}
+
+      {/* 인식 성공 메시지 */}
+      {recognitionSuccess && (
+        <div className="rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-700 flex items-center gap-2">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          {recognitionSuccess}
         </div>
       )}
 
@@ -263,8 +318,42 @@ export default function ImageUpload({
         </div>
       )}
 
-      {/* 업로드 개수 표시 */}
-      {images.length > 0 && (
+      {/* AI 제품 인식 버튼 */}
+      {showRecognizeButton && images.length > 0 && (
+        <div className="flex items-center justify-between gap-4">
+          <button
+            type="button"
+            onClick={handleRecognize}
+            disabled={isRecognizing || images.length === 0}
+            className="flex-1 btn-secondary flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {isRecognizing ? (
+              <>
+                <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+                <span>인식 중...</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                  />
+                </svg>
+                <span>AI로 제품 인식하기</span>
+              </>
+            )}
+          </button>
+          <p className="text-sm text-gray-500">
+            {images.length} / {maxImages}개
+          </p>
+        </div>
+      )}
+
+      {/* 업로드 개수 표시 (인식 버튼이 없을 때) */}
+      {!showRecognizeButton && images.length > 0 && (
         <p className="text-sm text-gray-500 text-right">
           {images.length} / {maxImages}개 이미지
         </p>

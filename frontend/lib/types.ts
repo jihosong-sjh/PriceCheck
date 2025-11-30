@@ -1,7 +1,7 @@
 // ========== Enum 정의 ==========
 
 // 제품 카테고리
-export type Category = 'SMARTPHONE' | 'LAPTOP' | 'TABLET' | 'SMARTWATCH' | 'EARPHONE';
+export type Category = 'SMARTPHONE' | 'LAPTOP' | 'TABLET' | 'SMARTWATCH' | 'EARPHONE' | 'SPEAKER' | 'MONITOR' | 'KEYBOARD_MOUSE' | 'TV';
 
 // 카테고리 한국어 레이블
 export const CATEGORY_LABELS: Record<Category, string> = {
@@ -10,6 +10,10 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   TABLET: '태블릿',
   SMARTWATCH: '스마트워치',
   EARPHONE: '이어폰/헤드폰',
+  SPEAKER: '블루투스 스피커',
+  MONITOR: '모니터',
+  KEYBOARD_MOUSE: '키보드/마우스',
+  TV: 'TV',
 };
 
 // 카테고리 목록 (선택 UI용)
@@ -19,6 +23,10 @@ export const CATEGORIES: { code: Category; name: string }[] = [
   { code: 'TABLET', name: '태블릿' },
   { code: 'SMARTWATCH', name: '스마트워치' },
   { code: 'EARPHONE', name: '이어폰/헤드폰' },
+  { code: 'SPEAKER', name: '블루투스 스피커' },
+  { code: 'MONITOR', name: '모니터' },
+  { code: 'KEYBOARD_MOUSE', name: '키보드/마우스' },
+  { code: 'TV', name: 'TV' },
 ];
 
 // 제품 상태
@@ -39,12 +47,13 @@ export const CONDITIONS: { code: Condition; name: string; description: string }[
 ];
 
 // 플랫폼
-export type Platform = 'BUNJANG' | 'JOONGONARA';
+export type Platform = 'BUNJANG' | 'JOONGONARA' | 'HELLOMARKET';
 
 // 플랫폼 한국어 레이블
 export const PLATFORM_LABELS: Record<Platform, string> = {
   BUNJANG: '번개장터',
   JOONGONARA: '중고나라',
+  HELLOMARKET: '헬로마켓',
 };
 
 // ========== API 요청/응답 타입 ==========
@@ -154,12 +163,200 @@ export interface ImageUploadResponse {
   url: string;
 }
 
+// ========== 북마크 타입 ==========
+
+// 북마크 항목
+export interface BookmarkItem {
+  id: string;
+  type: 'recommendation' | 'standalone';
+  recommendationId: string | null;
+  category: Category | null;
+  categoryLabel: string | null;
+  productName: string | null;
+  modelName: string | null;
+  condition: Condition | null;
+  conditionLabel: string | null;
+  recommendedPrice: number | null;
+  priceMin: number | null;
+  priceMax: number | null;
+  memo: string | null;
+  createdAt: string;
+  recommendationCreatedAt: string | null;
+}
+
+// 북마크 목록 응답
+export interface BookmarkListResponse {
+  items: BookmarkItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// 북마크 생성 요청
+export interface CreateBookmarkRequest {
+  recommendationId?: string;
+  category?: Category;
+  productName?: string;
+  modelName?: string;
+  memo?: string;
+}
+
+// 북마크 여부 확인 응답
+export interface BookmarkCheckResponse {
+  isBookmarked: boolean;
+  bookmarkId: string | null;
+}
+
+// ========== 이미지 인식 타입 ==========
+
+// 이미지 인식 결과
+export interface RecognitionResult {
+  category: Category | null;
+  brand: string | null;
+  productName: string | null;
+  modelName: string | null;
+  confidence: number;
+  rawLabels: string[];
+  rawTexts: string[];
+}
+
 // ========== API 에러 ==========
 
 export interface ApiError {
   error: string;
   message: string;
   details?: unknown;
+}
+
+// ========== 가격 알림 타입 ==========
+
+// 알림 타입
+export type NotificationType = 'PRICE_DROP' | 'PRICE_CHANGE' | 'SYSTEM';
+
+// 알림 타입 라벨
+export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
+  PRICE_DROP: '목표가격 도달',
+  PRICE_CHANGE: '가격 변동',
+  SYSTEM: '시스템 알림',
+};
+
+// 가격 알림 항목
+export interface PriceAlertItem {
+  id: string;
+  category: Category;
+  categoryLabel: string;
+  productName: string;
+  modelName: string | null;
+  condition: Condition;
+  conditionLabel: string;
+  targetPrice: number;
+  currentPrice: number | null;
+  priceDiff: number | null;
+  priceReached: boolean;
+  isActive: boolean;
+  lastCheckedAt: string | null;
+  notifiedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// 가격 알림 목록 응답
+export interface AlertListResponse {
+  items: PriceAlertItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// 가격 알림 생성 요청
+export interface CreateAlertRequest {
+  category: Category;
+  productName: string;
+  modelName?: string;
+  condition: Condition;
+  targetPrice: number;
+}
+
+// 가격 알림 수정 요청
+export interface UpdateAlertRequest {
+  targetPrice?: number;
+  isActive?: boolean;
+}
+
+// 알림 메시지 항목
+export interface NotificationItem {
+  id: string;
+  type: NotificationType;
+  typeLabel: string;
+  title: string;
+  message: string;
+  data: unknown;
+  isRead: boolean;
+  readAt: string | null;
+  createdAt: string;
+  alert: {
+    id: string;
+    category: Category;
+    productName: string;
+    modelName: string | null;
+    targetPrice: number;
+    currentPrice: number | null;
+  } | null;
+}
+
+// 알림 메시지 목록 응답
+export interface NotificationListResponse {
+  items: NotificationItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// ========== 자동완성 타입 ==========
+
+// 자동완성 제안 항목
+export interface AutocompleteSuggestion {
+  text: string;
+  source: 'history' | 'external';
+  category?: Category;
+  categoryName?: string;
+  searchCount?: number;
+}
+
+// 자동완성 응답
+export interface AutocompleteResponse {
+  suggestions: AutocompleteSuggestion[];
+}
+
+// 인기 검색어 항목
+export interface PopularSearchItem {
+  productName: string;
+  category: Category;
+  categoryName: string;
+  searchCount: number;
+}
+
+// 인기 검색어 응답
+export interface PopularSearchResponse {
+  items: PopularSearchItem[];
+}
+
+// 간편 검색 요청
+export interface QuickRecommendRequest {
+  productName: string;
+  condition?: Condition;
+  modelName?: string;
+}
+
+// 간편 검색 응답 (카테고리 자동 추정 정보 포함)
+export interface QuickRecommendResponse extends PriceRecommendResponse {
+  categoryDetection?: {
+    confidence: 'high' | 'medium' | 'low';
+    score: number;
+  };
 }
 
 // ========== UI 상태 타입 ==========

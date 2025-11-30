@@ -12,11 +12,15 @@ datasource db {
 
 // 제품 카테고리 Enum
 enum Category {
-  SMARTPHONE  // 스마트폰
-  LAPTOP      // 노트북
-  TABLET      // 태블릿
-  SMARTWATCH  // 스마트워치
-  EARPHONE    // 이어폰/헤드폰
+  SMARTPHONE     // 스마트폰
+  LAPTOP         // 노트북
+  TABLET         // 태블릿
+  SMARTWATCH     // 스마트워치
+  EARPHONE       // 이어폰/헤드폰
+  SPEAKER        // 블루투스 스피커
+  MONITOR        // 모니터
+  KEYBOARD_MOUSE // 키보드/마우스
+  TV             // TV
 }
 
 // 제품 상태 Enum
@@ -30,6 +34,14 @@ enum Condition {
 enum Platform {
   BUNJANG     // 번개장터
   JOONGONARA  // 중고나라
+  HELLOMARKET // 헬로마켓
+}
+
+// 알림 타입 Enum
+enum NotificationType {
+  PRICE_DROP   // 목표가격 도달
+  PRICE_CHANGE // 가격 변동
+  SYSTEM       // 시스템 알림
 }
 
 // 사용자 모델
@@ -41,6 +53,9 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   recommendations PriceRecommendation[]
+  bookmarks       Bookmark[]
+  alerts          PriceAlert[]
+  notifications   Notification[]
 
   @@map("users")
 }
@@ -59,8 +74,9 @@ model PriceRecommendation {
   marketDataSnapshot Json      @map("market_data_snapshot")
   createdAt          DateTime  @default(now()) @map("created_at")
 
-  user   User?          @relation(fields: [userId], references: [id])
-  images ProductImage[]
+  user      User?          @relation(fields: [userId], references: [id])
+  images    ProductImage[]
+  bookmarks Bookmark[]
 
   @@index([userId, createdAt(sort: Desc)])
   @@index([productName])
@@ -96,4 +112,80 @@ model ProductImage {
 
   @@index([recommendationId])
   @@map("product_images")
+}
+
+// 북마크(찜하기) 모델
+model Bookmark {
+  id               String    @id @default(cuid())
+  userId           String    @map("user_id")
+  recommendationId String?   @map("recommendation_id")
+
+  // 독립 저장용 (히스토리 없이 직접 찜하기)
+  category         Category?
+  productName      String?   @map("product_name")
+  modelName        String?   @map("model_name")
+
+  memo             String?
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recommendation PriceRecommendation? @relation(fields: [recommendationId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, recommendationId])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("bookmarks")
+}
+
+// 가격 알림 모델
+model PriceAlert {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+
+  category     Category
+  productName  String    @map("product_name")
+  modelName    String?   @map("model_name")
+  condition    Condition
+
+  targetPrice  Int       @map("target_price")  // 목표 가격 (이 가격 이하면 알림)
+  currentPrice Int?      @map("current_price") // 마지막 확인된 가격
+
+  isActive     Boolean   @default(true) @map("is_active")
+  lastCheckedAt DateTime? @map("last_checked_at")
+  notifiedAt   DateTime? @map("notified_at")   // 마지막 알림 발송 시간
+
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+
+  @@index([userId, isActive])
+  @@index([isActive, category])
+  @@index([isActive, lastCheckedAt])
+  @@map("price_alerts")
+}
+
+// 알림 메시지 모델
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  alertId   String?  @map("alert_id")
+
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+
+  isRead    Boolean   @default(false) @map("is_read")
+  readAt    DateTime? @map("read_at")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alert PriceAlert? @relation(fields: [alertId], references: [id], onDelete: SetNull)
+
+  @@index([userId, isRead, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("notifications")
 }

@@ -57,18 +57,25 @@ function buildSearchUrl(productName: string, modelName?: string): string {
  * 예: "150,000원" -> 150000, "15만원" -> 150000
  */
 function parsePrice(priceText: string): number | null {
-  // "만원" 처리
-  if (priceText.includes('만')) {
-    const match = priceText.match(/(\d+(?:\.\d+)?)\s*만/);
-    if (match) {
-      return Math.round(parseFloat(match[1]) * 10000);
-    }
+  // "만원" 처리 (예: "41만원", "41.5만원", "41만 원")
+  const manwonMatch = priceText.match(/(\d+(?:\.\d+)?)\s*만\s*원?/);
+  if (manwonMatch) {
+    const price = Math.round(parseFloat(manwonMatch[1]) * 10000);
+    // 합리적인 가격 범위 검증 (1천원 ~ 1억원)
+    return price >= 1000 && price <= 100000000 ? price : null;
   }
 
-  // 일반 숫자 처리
-  const cleaned = priceText.replace(/[^0-9]/g, '');
-  const price = parseInt(cleaned, 10);
-  return isNaN(price) || price <= 0 ? null : price;
+  // 일반 가격 처리 (예: "150,000원", "150000원")
+  // 연속된 숫자+콤마 패턴만 추출 (제품명의 숫자 제외)
+  const priceMatch = priceText.match(/(\d{1,3}(?:,\d{3})*|\d+)\s*원/);
+  if (priceMatch) {
+    const cleaned = priceMatch[1].replace(/,/g, '');
+    const price = parseInt(cleaned, 10);
+    // 합리적인 가격 범위 검증 (1천원 ~ 1억원)
+    return price >= 1000 && price <= 100000000 ? price : null;
+  }
+
+  return null;
 }
 
 /**

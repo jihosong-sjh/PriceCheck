@@ -9,6 +9,10 @@ export const CategoryEnum = z.enum([
   'TABLET',
   'SMARTWATCH',
   'EARPHONE',
+  'SPEAKER',
+  'MONITOR',
+  'KEYBOARD_MOUSE',
+  'TV',
 ]);
 export type Category = z.infer<typeof CategoryEnum>;
 
@@ -19,6 +23,10 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   TABLET: '태블릿',
   SMARTWATCH: '스마트워치',
   EARPHONE: '이어폰/헤드폰',
+  SPEAKER: '블루투스 스피커',
+  MONITOR: '모니터',
+  KEYBOARD_MOUSE: '키보드/마우스',
+  TV: 'TV',
 };
 
 // 제품 상태 (Prisma 스키마와 일치)
@@ -33,13 +41,14 @@ export const CONDITION_LABELS: Record<Condition, string> = {
 };
 
 // 플랫폼 (Prisma 스키마와 일치)
-export const PlatformEnum = z.enum(['BUNJANG', 'JOONGONARA']);
+export const PlatformEnum = z.enum(['BUNJANG', 'JOONGONARA', 'HELLOMARKET']);
 export type Platform = z.infer<typeof PlatformEnum>;
 
 // 플랫폼 한국어 레이블
 export const PLATFORM_LABELS: Record<Platform, string> = {
   BUNJANG: '번개장터',
   JOONGONARA: '중고나라',
+  HELLOMARKET: '헬로마켓',
 };
 
 // ========== 사용자 관련 스키마 ==========

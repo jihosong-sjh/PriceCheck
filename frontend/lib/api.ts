@@ -10,6 +10,22 @@ import type {
   HistoryDetailResponse,
   ImageUploadResponse,
   ApiError,
+  BookmarkItem,
+  BookmarkListResponse,
+  CreateBookmarkRequest,
+  BookmarkCheckResponse,
+  RecognitionResult,
+  PriceAlertItem,
+  AlertListResponse,
+  CreateAlertRequest,
+  UpdateAlertRequest,
+  NotificationItem,
+  NotificationListResponse,
+  AutocompleteSuggestion,
+  PopularSearchItem,
+  QuickRecommendRequest,
+  QuickRecommendResponse,
+  Category,
 } from './types';
 
 // API 기본 URL
@@ -122,6 +138,7 @@ export async function getCategories(): Promise<CategoriesResponse> {
   interface BackendPriceResponse {
     success: boolean;
     data: {
+      id?: string;
       input: {
         category: string;
         categoryName: string;
@@ -164,10 +181,10 @@ export async function getCategories(): Promise<CategoriesResponse> {
     });
 
     // 백엔드 응답을 프론트엔드 형식으로 변환
-    const { input, recommendation, marketDataSnapshot } = response.data;
+    const { id, input, recommendation, marketDataSnapshot } = response.data;
 
     return {
-      id: crypto.randomUUID(),
+      id: id || crypto.randomUUID(), // 로그인 사용자는 백엔드 ID, 비로그인은 임시 ID
       category: input.category as PriceRecommendResponse['category'],
       productName: input.productName,
       modelName: input.modelName,
@@ -378,4 +395,363 @@ export async function deleteImage(key: string): Promise<{ message: string }> {
 
 export async function healthCheck(): Promise<{ status: string; timestamp: string }> {
   return request<{ status: string; timestamp: string }>('/health');
+}
+
+// ========== 북마크 API ==========
+
+// 백엔드 북마크 목록 응답 타입 (내부 사용)
+interface BackendBookmarkListResponse {
+  success: boolean;
+  data: {
+    items: BookmarkItem[];
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalCount: number;
+      limit: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
+  };
+}
+
+// 백엔드 북마크 생성 응답 타입 (내부 사용)
+interface BackendBookmarkCreateResponse {
+  success: boolean;
+  message: string;
+  data: BookmarkItem;
+}
+
+// 백엔드 북마크 확인 응답 타입 (내부 사용)
+interface BackendBookmarkCheckResponse {
+  success: boolean;
+  data: BookmarkCheckResponse;
+}
+
+// 북마크 목록 조회
+export async function getBookmarkList(
+  page: number = 1,
+  limit: number = 10
+): Promise<BookmarkListResponse> {
+  const response = await request<BackendBookmarkListResponse>('/bookmarks', {
+    params: { page, limit },
+  });
+
+  return {
+    items: response.data.items,
+    total: response.data.pagination.totalCount,
+    page: response.data.pagination.currentPage,
+    limit: response.data.pagination.limit,
+    totalPages: response.data.pagination.totalPages,
+  };
+}
+
+// 북마크 추가
+export async function createBookmark(
+  data: CreateBookmarkRequest
+): Promise<BookmarkItem> {
+  const response = await request<BackendBookmarkCreateResponse>('/bookmarks', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+  return response.data;
+}
+
+// 북마크 삭제
+export async function deleteBookmark(id: string): Promise<{ message: string }> {
+  return request<{ message: string }>(`/bookmarks/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+// 북마크 여부 확인
+export async function checkBookmark(
+  recommendationId: string
+): Promise<BookmarkCheckResponse> {
+  const response = await request<BackendBookmarkCheckResponse>(
+    `/bookmarks/check/${recommendationId}`
+  );
+
+  return response.data;
+}
+
+// ========== 이미지 인식 API ==========
+
+// 백엔드 인식 응답 타입 (내부 사용)
+interface BackendRecognizeResponse {
+  success: boolean;
+  data: RecognitionResult;
+}
+
+// 이미지에서 제품 정보 인식
+export async function recognizeProduct(
+  imageUrl: string
+): Promise<RecognitionResult> {
+  const response = await request<BackendRecognizeResponse>('/recognize', {
+    method: 'POST',
+    body: JSON.stringify({ imageUrl }),
+  });
+
+  return response.data;
+}
+
+// ========== 가격 알림 API ==========
+
+// 백엔드 알림 목록 응답 타입 (내부 사용)
+interface BackendAlertListResponse {
+  success: boolean;
+  data: {
+    items: PriceAlertItem[];
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalCount: number;
+      limit: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
+  };
+}
+
+// 백엔드 알림 생성/수정 응답 타입 (내부 사용)
+interface BackendAlertResponse {
+  success: boolean;
+  message: string;
+  data: PriceAlertItem;
+}
+
+// 알림 목록 조회
+export async function getAlertList(
+  page: number = 1,
+  limit: number = 10,
+  activeOnly: boolean = false
+): Promise<AlertListResponse> {
+  const response = await request<BackendAlertListResponse>('/alerts', {
+    params: { page, limit, activeOnly: activeOnly ? 'true' : undefined },
+  });
+
+  return {
+    items: response.data.items,
+    total: response.data.pagination.totalCount,
+    page: response.data.pagination.currentPage,
+    limit: response.data.pagination.limit,
+    totalPages: response.data.pagination.totalPages,
+  };
+}
+
+// 알림 상세 조회
+export async function getAlertDetail(id: string): Promise<PriceAlertItem> {
+  const response = await request<BackendAlertResponse>(`/alerts/${id}`);
+  return response.data;
+}
+
+// 알림 생성
+export async function createAlert(data: CreateAlertRequest): Promise<PriceAlertItem> {
+  const response = await request<BackendAlertResponse>('/alerts', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  return response.data;
+}
+
+// 알림 수정
+export async function updateAlert(
+  id: string,
+  data: UpdateAlertRequest
+): Promise<PriceAlertItem> {
+  const response = await request<BackendAlertResponse>(`/alerts/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+  return response.data;
+}
+
+// 알림 삭제
+export async function deleteAlert(id: string): Promise<{ message: string }> {
+  return request<{ message: string }>(`/alerts/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+// ========== 알림 메시지 API ==========
+
+// 백엔드 알림 메시지 목록 응답 타입 (내부 사용)
+interface BackendNotificationListResponse {
+  success: boolean;
+  data: {
+    items: NotificationItem[];
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalCount: number;
+      limit: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
+  };
+}
+
+// 알림 메시지 목록 조회
+export async function getNotificationList(
+  page: number = 1,
+  limit: number = 10,
+  unreadOnly: boolean = false
+): Promise<NotificationListResponse> {
+  const response = await request<BackendNotificationListResponse>('/notifications', {
+    params: { page, limit, unreadOnly: unreadOnly ? 'true' : undefined },
+  });
+
+  return {
+    items: response.data.items,
+    total: response.data.pagination.totalCount,
+    page: response.data.pagination.currentPage,
+    limit: response.data.pagination.limit,
+    totalPages: response.data.pagination.totalPages,
+  };
+}
+
+// 읽지 않은 알림 개수 조회
+export async function getUnreadNotificationCount(): Promise<number> {
+  const response = await request<{ success: boolean; data: { count: number } }>(
+    '/notifications/unread-count'
+  );
+  return response.data.count;
+}
+
+// 알림 읽음 처리
+export async function markNotificationAsRead(id: string): Promise<void> {
+  await request(`/notifications/${id}/read`, {
+    method: 'PATCH',
+  });
+}
+
+// 모든 알림 읽음 처리
+export async function markAllNotificationsAsRead(): Promise<{ updatedCount: number }> {
+  const response = await request<{ success: boolean; data: { updatedCount: number } }>(
+    '/notifications/read-all',
+    { method: 'POST' }
+  );
+  return response.data;
+}
+
+// 알림 삭제
+export async function deleteNotification(id: string): Promise<{ message: string }> {
+  return request<{ message: string }>(`/notifications/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+// ========== 자동완성 API ==========
+
+// 백엔드 자동완성 응답 타입 (내부 사용)
+interface BackendAutocompleteResponse {
+  success: boolean;
+  data: {
+    suggestions: AutocompleteSuggestion[];
+  };
+}
+
+// 백엔드 인기 검색어 응답 타입 (내부 사용)
+interface BackendPopularSearchResponse {
+  success: boolean;
+  data: {
+    items: PopularSearchItem[];
+  };
+}
+
+// 백엔드 간편 검색 응답 타입 (내부 사용)
+interface BackendQuickRecommendResponse {
+  success: boolean;
+  data: {
+    id?: string;
+    input: {
+      category: string;
+      categoryName: string;
+      productName: string;
+      modelName?: string;
+      condition: string;
+      conditionName: string;
+    };
+    recommendation: {
+      recommendedPrice: number;
+      priceMin: number;
+      priceMax: number;
+      averagePrice: number;
+      medianPrice: number;
+      confidence: string;
+      sampleCount: number;
+    };
+    marketDataSnapshot: Array<{
+      price: number;
+      platform: string;
+      condition?: string;
+      originalUrl?: string;
+      scrapedAt: string;
+    }>;
+    crawlStats: {
+      totalItems: number;
+      itemsByPlatform: Record<string, number>;
+      crawlDuration: number;
+    };
+    categoryDetection?: {
+      confidence: 'high' | 'medium' | 'low';
+      score: number;
+    };
+  };
+}
+
+// 자동완성 조회
+export async function getAutocomplete(query: string): Promise<AutocompleteSuggestion[]> {
+  const response = await request<BackendAutocompleteResponse>('/search/autocomplete', {
+    params: { q: query },
+  });
+  return response.data.suggestions;
+}
+
+// 인기 검색어 조회
+export async function getPopularSearches(
+  category?: Category,
+  limit: number = 10
+): Promise<PopularSearchItem[]> {
+  const response = await request<BackendPopularSearchResponse>('/search/popular', {
+    params: { category, limit },
+  });
+  return response.data.items;
+}
+
+// 간편 가격 추천 (카테고리 자동 추정)
+export async function quickPriceRecommend(
+  data: QuickRecommendRequest
+): Promise<QuickRecommendResponse> {
+  const response = await request<BackendQuickRecommendResponse>('/price/quick-recommend', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+  // 백엔드 응답을 프론트엔드 형식으로 변환
+  const { id, input, recommendation, marketDataSnapshot, categoryDetection } = response.data;
+
+  return {
+    id: id || crypto.randomUUID(),
+    category: input.category as QuickRecommendResponse['category'],
+    productName: input.productName,
+    modelName: input.modelName,
+    condition: input.condition as QuickRecommendResponse['condition'],
+    recommendedPrice: recommendation.recommendedPrice,
+    priceMin: recommendation.priceMin,
+    priceMax: recommendation.priceMax,
+    marketDataSnapshot: marketDataSnapshot.map((item, index) => ({
+      id: `${index}`,
+      productName: input.productName,
+      modelName: input.modelName,
+      platform: item.platform as 'BUNJANG' | 'JOONGONARA' | 'HELLOMARKET',
+      price: item.price,
+      condition: item.condition,
+      originalUrl: item.originalUrl,
+      scrapedAt: item.scrapedAt,
+    })),
+    createdAt: new Date().toISOString(),
+    categoryDetection,
+  };
 }

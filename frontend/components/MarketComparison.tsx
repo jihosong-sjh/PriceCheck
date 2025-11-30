@@ -36,32 +36,37 @@ function formatDate(dateString: string): string {
 // 플랫폼별 스타일
 const PLATFORM_STYLES: Record<string, { bg: string; text: string; border: string }> = {
   BUNJANG: {
-    bg: 'bg-orange-50',
-    text: 'text-orange-700',
-    border: 'border-orange-200',
+    bg: 'bg-orange-50 dark:bg-orange-900/30',
+    text: 'text-orange-700 dark:text-orange-300',
+    border: 'border-orange-200 dark:border-orange-800',
   },
   JOONGONARA: {
-    bg: 'bg-green-50',
-    text: 'text-green-700',
-    border: 'border-green-200',
+    bg: 'bg-green-50 dark:bg-green-900/30',
+    text: 'text-green-700 dark:text-green-300',
+    border: 'border-green-200 dark:border-green-800',
+  },
+  HELLOMARKET: {
+    bg: 'bg-blue-50 dark:bg-blue-900/30',
+    text: 'text-blue-700 dark:text-blue-300',
+    border: 'border-blue-200 dark:border-blue-800',
   },
 };
 
 // 기본 플랫폼 스타일
 const DEFAULT_PLATFORM_STYLE = {
-  bg: 'bg-gray-50',
-  text: 'text-gray-700',
-  border: 'border-gray-200',
+  bg: 'bg-gray-50 dark:bg-gray-700',
+  text: 'text-gray-700 dark:text-gray-300',
+  border: 'border-gray-200 dark:border-gray-600',
 };
 
 export default function MarketComparison({ marketData }: MarketComparisonProps) {
   // 데이터가 없는 경우
   if (!marketData || marketData.length === 0) {
     return (
-      <div className="card bg-gray-50">
+      <div className="card bg-gray-50 dark:bg-gray-800">
         <div className="text-center py-4">
           <svg
-            className="w-12 h-12 text-gray-400 mx-auto mb-3"
+            className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-3"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -73,7 +78,7 @@ export default function MarketComparison({ marketData }: MarketComparisonProps) 
               d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <p className="text-gray-500">유사 매물 정보가 없습니다.</p>
+          <p className="text-gray-500 dark:text-gray-400">유사 매물 정보가 없습니다.</p>
         </div>
       </div>
     );
@@ -82,8 +87,8 @@ export default function MarketComparison({ marketData }: MarketComparisonProps) 
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">시세 비교</h3>
-        <span className="text-sm text-gray-500">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">시세 비교</h3>
+        <span className="text-sm text-gray-500 dark:text-gray-400">
           {marketData.length}개 매물 참고
         </span>
       </div>
@@ -92,20 +97,20 @@ export default function MarketComparison({ marketData }: MarketComparisonProps) 
       <div className="hidden sm:block overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-200">
-              <th className="pb-3 text-left text-sm font-medium text-gray-500">플랫폼</th>
-              <th className="pb-3 text-right text-sm font-medium text-gray-500">가격</th>
-              <th className="pb-3 text-center text-sm font-medium text-gray-500">상태</th>
-              <th className="pb-3 text-right text-sm font-medium text-gray-500">등록일</th>
-              <th className="pb-3 text-center text-sm font-medium text-gray-500">링크</th>
+            <tr className="border-b border-gray-200 dark:border-gray-700">
+              <th className="pb-3 text-left text-sm font-medium text-gray-500 dark:text-gray-400">플랫폼</th>
+              <th className="pb-3 text-right text-sm font-medium text-gray-500 dark:text-gray-400">가격</th>
+              <th className="pb-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">상태</th>
+              <th className="pb-3 text-right text-sm font-medium text-gray-500 dark:text-gray-400">등록일</th>
+              <th className="pb-3 text-center text-sm font-medium text-gray-500 dark:text-gray-400">링크</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {marketData.map((item) => {
               const platformStyle = PLATFORM_STYLES[item.platform] || DEFAULT_PLATFORM_STYLE;
 
               return (
-                <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                   <td className="py-3">
                     <span
                       className={`inline-flex items-center px-2.5 py-1 rounded-md text-sm font-medium ${platformStyle.bg} ${platformStyle.text}`}
@@ -114,17 +119,17 @@ export default function MarketComparison({ marketData }: MarketComparisonProps) 
                     </span>
                   </td>
                   <td className="py-3 text-right">
-                    <span className="font-semibold text-gray-900">
+                    <span className="font-semibold text-gray-900 dark:text-white">
                       {formatPrice(item.price)}원
                     </span>
                   </td>
                   <td className="py-3 text-center">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
                       {item.condition || '-'}
                     </span>
                   </td>
                   <td className="py-3 text-right">
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
                       {formatDate(item.scrapedAt)}
                     </span>
                   </td>
@@ -134,7 +139,7 @@ export default function MarketComparison({ marketData }: MarketComparisonProps) 
                         href={item.originalUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center text-primary-600 hover:text-primary-800 transition-colors"
+                        className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 transition-colors"
                         title="원본 매물 보기"
                       >
                         <svg
@@ -152,7 +157,7 @@ export default function MarketComparison({ marketData }: MarketComparisonProps) 
                         </svg>
                       </a>
                     ) : (
-                      <span className="text-gray-300">-</span>
+                      <span className="text-gray-300 dark:text-gray-600">-</span>
                     )}
                   </td>
                 </tr>
@@ -183,7 +188,7 @@ export default function MarketComparison({ marketData }: MarketComparisonProps) 
                     href={item.originalUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary-600 hover:text-primary-800"
+                    className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300"
                   >
                     <svg
                       className="w-4 h-4"
@@ -202,15 +207,15 @@ export default function MarketComparison({ marketData }: MarketComparisonProps) 
                 )}
               </div>
               <div className="flex items-baseline justify-between">
-                <span className="text-lg font-bold text-gray-900">
+                <span className="text-lg font-bold text-gray-900 dark:text-white">
                   {formatPrice(item.price)}원
                 </span>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                   {formatDate(item.scrapedAt)}
                 </span>
               </div>
               {item.condition && (
-                <p className="mt-1 text-sm text-gray-600">상태: {item.condition}</p>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">상태: {item.condition}</p>
               )}
             </div>
           );
@@ -218,8 +223,8 @@ export default function MarketComparison({ marketData }: MarketComparisonProps) 
       </div>
 
       {/* 안내 문구 */}
-      <div className="mt-4 pt-4 border-t border-gray-100">
-        <p className="text-xs text-gray-500 flex items-center gap-1">
+      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
           <svg
             className="w-4 h-4 flex-shrink-0"
             fill="none"

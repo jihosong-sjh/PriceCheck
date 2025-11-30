@@ -13,6 +13,7 @@
 
   body {
     @apply bg-gray-50 text-gray-900 font-sans antialiased;
+    @apply dark:bg-gray-900 dark:text-gray-100;
   }
 
   /* 포커스 스타일 */
@@ -27,6 +28,7 @@
   /* 링크 기본 스타일 */
   a {
     @apply text-primary-600 hover:text-primary-800 transition-colors;
+    @apply dark:text-primary-400 dark:hover:text-primary-300;
   }
 
   /* 입력 필드 기본 스타일 */
@@ -37,6 +39,9 @@
            focus:border-primary-500 focus:ring-1 focus:ring-primary-500
            disabled:bg-gray-100 disabled:cursor-not-allowed
            transition-colors;
+    @apply dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100
+           dark:focus:border-primary-400 dark:focus:ring-primary-400
+           dark:disabled:bg-gray-700;
   }
 
   /* 버튼 기본 스타일 */
@@ -59,24 +64,31 @@
     @apply btn bg-primary-600 text-white
            hover:bg-primary-700
            focus-visible:ring-primary-500;
+    @apply dark:bg-primary-500 dark:text-white
+           dark:hover:bg-primary-600 dark:hover:text-white;
   }
 
   .btn-secondary {
     @apply btn bg-gray-200 text-gray-900
            hover:bg-gray-300
            focus-visible:ring-gray-500;
+    @apply dark:bg-gray-700 dark:text-gray-100
+           dark:hover:bg-gray-600;
   }
 
   .btn-outline {
     @apply btn border-2 border-primary-600 text-primary-600
            hover:bg-primary-50
            focus-visible:ring-primary-500;
+    @apply dark:border-primary-400 dark:text-primary-400
+           dark:hover:bg-primary-900/30;
   }
 
   .btn-ghost {
     @apply btn text-gray-600
            hover:bg-gray-100
            focus-visible:ring-gray-500;
+    @apply dark:text-gray-300 dark:hover:bg-gray-700;
   }
 
   .btn-danger {
@@ -97,10 +109,12 @@
   /* 카드 컴포넌트 */
   .card {
     @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+    @apply dark:bg-gray-800 dark:border-gray-700;
   }
 
   .card-hover {
     @apply card hover:shadow-md transition-shadow duration-200;
+    @apply dark:hover:shadow-gray-900/50;
   }
 
   /* 입력 그룹 */
@@ -110,14 +124,17 @@
 
   .input-label {
     @apply text-sm font-medium text-gray-700;
+    @apply dark:text-gray-300;
   }
 
   .input-error {
     @apply text-sm text-red-600;
+    @apply dark:text-red-400;
   }
 
   .input-help {
     @apply text-sm text-gray-500;
+    @apply dark:text-gray-400;
   }
 
   /* 폼 필드 */
@@ -125,16 +142,20 @@
     @apply w-full border border-gray-300 rounded-lg px-4 py-2.5
            focus:border-primary-500 focus:ring-1 focus:ring-primary-500
            placeholder:text-gray-400;
+    @apply dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100
+           dark:placeholder:text-gray-500;
   }
 
   .form-field-error {
     @apply form-field border-red-500 focus:border-red-500 focus:ring-red-500;
+    @apply dark:border-red-400;
   }
 
   /* 셀렉트 박스 */
   .select-field {
     @apply form-field appearance-none bg-white cursor-pointer
            bg-no-repeat bg-right pr-10;
+    @apply dark:bg-gray-800;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
     background-position: right 0.75rem center;
     background-size: 1.25em 1.25em;
@@ -164,6 +185,7 @@
 
   .badge-gray {
     @apply badge bg-gray-100 text-gray-800;
+    @apply dark:bg-gray-700 dark:text-gray-300;
   }
 
   /* 컨테이너 */
@@ -192,11 +214,13 @@
   /* 에러 박스 */
   .error-box {
     @apply bg-red-50 border border-red-200 rounded-lg p-4 text-red-800;
+    @apply dark:bg-red-900/30 dark:border-red-800 dark:text-red-300;
   }
 
   /* 성공 박스 */
   .success-box {
     @apply bg-green-50 border border-green-200 rounded-lg p-4 text-green-800;
+    @apply dark:bg-green-900/30 dark:border-green-800 dark:text-green-300;
   }
 }
 

@@ -17,6 +17,11 @@ out/
 .env.production.local
 .env.example
 
+# Google Cloud credentials (절대 커밋 금지!)
+**/google-credentials.json
+**/gcp-*.json
+**/*-service-account.json
+
 # Logs
 *.log
 npm-debug.log*
@@ -54,3 +59,12 @@ Thumbs.db
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# PWA (next-pwa 빌드 시 자동 생성)
+frontend/public/sw.js
+frontend/public/sw.js.map
+frontend/public/workbox-*.js
+frontend/public/workbox-*.js.map
+
+# pwa-asset-generator 중복 폴더
+frontend/public/icons/public/

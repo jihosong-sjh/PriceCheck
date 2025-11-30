@@ -75,22 +75,22 @@ export default function HistoryDetailPage() {
     return (
       <div className="container-wide py-8">
         <div className="mb-6">
-          <Link href="/history" className="text-primary-600 hover:text-primary-700 no-underline">
+          <Link href="/history" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 no-underline">
             &larr; 히스토리 목록
           </Link>
         </div>
         <div className="animate-pulse space-y-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="h-6 bg-gray-200 rounded w-1/3 mb-4" />
-            <div className="h-4 bg-gray-200 rounded w-1/4 mb-2" />
-            <div className="h-8 bg-gray-200 rounded w-1/4" />
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-4" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-2" />
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="h-6 bg-gray-200 rounded w-1/4 mb-4" />
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4" />
             <div className="space-y-2">
-              <div className="h-12 bg-gray-200 rounded" />
-              <div className="h-12 bg-gray-200 rounded" />
-              <div className="h-12 bg-gray-200 rounded" />
+              <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded" />
+              <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded" />
+              <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded" />
             </div>
           </div>
         </div>
@@ -102,12 +102,12 @@ export default function HistoryDetailPage() {
     return (
       <div className="container-wide py-8">
         <div className="mb-6">
-          <Link href="/history" className="text-primary-600 hover:text-primary-700 no-underline">
+          <Link href="/history" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 no-underline">
             &larr; 히스토리 목록
           </Link>
         </div>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-          <p className="text-red-700">{error}</p>
+        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
+          <p className="text-red-700 dark:text-red-400">{error}</p>
           <Link href="/history" className="mt-4 btn-primary inline-block no-underline">
             히스토리 목록으로 돌아가기
           </Link>
@@ -123,53 +123,53 @@ export default function HistoryDetailPage() {
   return (
     <div className="container-wide py-8">
       <div className="mb-6">
-        <Link href="/history" className="text-primary-600 hover:text-primary-700 no-underline">
+        <Link href="/history" className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 no-underline">
           &larr; 히스토리 목록
         </Link>
       </div>
 
       {/* 제품 정보 카드 */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
         <div className="flex items-start justify-between mb-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="inline-block px-2 py-0.5 text-xs font-medium bg-primary-100 text-primary-700 rounded">
+              <span className="inline-block px-2 py-0.5 text-xs font-medium bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 rounded">
                 {CATEGORY_LABELS[historyDetail.category]}
               </span>
-              <span className="inline-block px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-700 rounded">
+              <span className="inline-block px-2 py-0.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
                 상태: {CONDITION_LABELS[historyDetail.condition]}
               </span>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               {historyDetail.productName}
               {historyDetail.modelName && (
-                <span className="text-gray-600 font-normal"> ({historyDetail.modelName})</span>
+                <span className="text-gray-600 dark:text-gray-400 font-normal"> ({historyDetail.modelName})</span>
               )}
             </h1>
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
               조회일: {formatDate(historyDetail.createdAt)}
             </p>
           </div>
         </div>
 
         {/* 추천 결과 */}
-        <div className="bg-gradient-to-r from-primary-50 to-blue-50 rounded-lg p-6 mt-4">
+        <div className="bg-gradient-to-r from-primary-50 to-blue-50 dark:from-gray-700 dark:to-gray-600 rounded-lg p-6 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
-              <p className="text-sm text-gray-600 mb-1">추천 가격</p>
-              <p className="text-3xl font-bold text-primary-600">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">추천 가격</p>
+              <p className="text-3xl font-bold text-primary-600 dark:text-primary-400">
                 {formatPrice(historyDetail.recommendedPrice)}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-gray-600 mb-1">최저 가격</p>
-              <p className="text-2xl font-semibold text-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">최저 가격</p>
+              <p className="text-2xl font-semibold text-gray-700 dark:text-gray-200">
                 {formatPrice(historyDetail.priceMin)}
               </p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-gray-600 mb-1">최고 가격</p>
-              <p className="text-2xl font-semibold text-gray-700">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">최고 가격</p>
+              <p className="text-2xl font-semibold text-gray-700 dark:text-gray-200">
                 {formatPrice(historyDetail.priceMax)}
               </p>
             </div>
@@ -179,11 +179,11 @@ export default function HistoryDetailPage() {
 
       {/* 업로드된 이미지 */}
       {historyDetail.images && historyDetail.images.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">업로드된 이미지</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">업로드된 이미지</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {historyDetail.images.map((image) => (
-              <div key={image.id} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+              <div key={image.id} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
                 <Image
                   src={image.imageUrl}
                   alt="제품 이미지"
@@ -199,8 +199,8 @@ export default function HistoryDetailPage() {
 
       {/* 시세 비교 정보 */}
       {historyDetail.marketDataSnapshot && historyDetail.marketDataSnapshot.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">당시 시세 비교 정보</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">당시 시세 비교 정보</h2>
           <MarketComparison marketData={historyDetail.marketDataSnapshot} />
         </div>
       )}
