@@ -229,6 +229,92 @@ export interface ApiError {
   details?: unknown;
 }
 
+// ========== 가격 알림 타입 ==========
+
+// 알림 타입
+export type NotificationType = 'PRICE_DROP' | 'PRICE_CHANGE' | 'SYSTEM';
+
+// 알림 타입 라벨
+export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
+  PRICE_DROP: '목표가격 도달',
+  PRICE_CHANGE: '가격 변동',
+  SYSTEM: '시스템 알림',
+};
+
+// 가격 알림 항목
+export interface PriceAlertItem {
+  id: string;
+  category: Category;
+  categoryLabel: string;
+  productName: string;
+  modelName: string | null;
+  condition: Condition;
+  conditionLabel: string;
+  targetPrice: number;
+  currentPrice: number | null;
+  priceDiff: number | null;
+  priceReached: boolean;
+  isActive: boolean;
+  lastCheckedAt: string | null;
+  notifiedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// 가격 알림 목록 응답
+export interface AlertListResponse {
+  items: PriceAlertItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+// 가격 알림 생성 요청
+export interface CreateAlertRequest {
+  category: Category;
+  productName: string;
+  modelName?: string;
+  condition: Condition;
+  targetPrice: number;
+}
+
+// 가격 알림 수정 요청
+export interface UpdateAlertRequest {
+  targetPrice?: number;
+  isActive?: boolean;
+}
+
+// 알림 메시지 항목
+export interface NotificationItem {
+  id: string;
+  type: NotificationType;
+  typeLabel: string;
+  title: string;
+  message: string;
+  data: unknown;
+  isRead: boolean;
+  readAt: string | null;
+  createdAt: string;
+  alert: {
+    id: string;
+    category: Category;
+    productName: string;
+    modelName: string | null;
+    targetPrice: number;
+    currentPrice: number | null;
+  } | null;
+}
+
+// 알림 메시지 목록 응답
+export interface NotificationListResponse {
+  items: NotificationItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 // ========== UI 상태 타입 ==========
 
 // 로딩 상태

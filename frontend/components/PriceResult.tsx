@@ -9,6 +9,7 @@ import {
 import { calculateCV } from '@/lib/chartUtils';
 import MarketComparison from './MarketComparison';
 import BookmarkButton from './BookmarkButton';
+import PriceAlertButton from './PriceAlertButton';
 
 // 차트 컴포넌트 동적 로딩 (SSR 비활성화)
 const ConfidenceIndicator = dynamic(
@@ -91,9 +92,16 @@ export default function PriceResult({ result, error, onReset, recommendationId }
     <div className="space-y-6">
       {/* 추천 가격 카드 */}
       <div className="card bg-gradient-to-br from-primary-50 to-blue-50 border-primary-200 relative">
-        {/* 찜하기 버튼 */}
+        {/* 찜하기 & 알림 버튼 */}
         {recommendationId && (
-          <div className="absolute top-4 right-4">
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+            <PriceAlertButton
+              category={category}
+              productName={productName}
+              modelName={modelName}
+              condition={condition}
+              currentPrice={recommendedPrice}
+            />
             <BookmarkButton recommendationId={recommendationId} size="md" />
           </div>
         )}

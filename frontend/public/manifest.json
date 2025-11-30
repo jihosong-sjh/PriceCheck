@@ -1,0 +1,95 @@
+{
+  "name": "PriceCheck - 중고 전자제품 시세 추천",
+  "short_name": "PriceCheck",
+  "description": "AI 이미지 인식과 실시간 크롤링을 통해 중고 전자제품의 적정 가격을 추천해드립니다.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3B82F6",
+  "orientation": "portrait-primary",
+  "categories": ["shopping", "utilities", "finance"],
+  "lang": "ko",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/home.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "홈 화면"
+    },
+    {
+      "src": "/screenshots/price-guide.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "가격 추천 화면"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "가격 추천",
+      "short_name": "추천",
+      "description": "중고 전자제품 가격 추천받기",
+      "url": "/price-guide",
+      "icons": [{ "src": "/icons/shortcut-price.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "찜 목록",
+      "short_name": "찜",
+      "description": "저장한 찜 목록 보기",
+      "url": "/bookmarks",
+      "icons": [{ "src": "/icons/shortcut-bookmark.png", "sizes": "96x96" }]
+    }
+  ]
+}

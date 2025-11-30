@@ -15,6 +15,12 @@ import type {
   CreateBookmarkRequest,
   BookmarkCheckResponse,
   RecognitionResult,
+  PriceAlertItem,
+  AlertListResponse,
+  CreateAlertRequest,
+  UpdateAlertRequest,
+  NotificationItem,
+  NotificationListResponse,
 } from './types';
 
 // API 기본 URL
@@ -483,4 +489,150 @@ export async function recognizeProduct(
   });
 
   return response.data;
+}
+
+// ========== 가격 알림 API ==========
+
+// 백엔드 알림 목록 응답 타입 (내부 사용)
+interface BackendAlertListResponse {
+  success: boolean;
+  data: {
+    items: PriceAlertItem[];
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalCount: number;
+      limit: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
+  };
+}
+
+// 백엔드 알림 생성/수정 응답 타입 (내부 사용)
+interface BackendAlertResponse {
+  success: boolean;
+  message: string;
+  data: PriceAlertItem;
+}
+
+// 알림 목록 조회
+export async function getAlertList(
+  page: number = 1,
+  limit: number = 10,
+  activeOnly: boolean = false
+): Promise<AlertListResponse> {
+  const response = await request<BackendAlertListResponse>('/alerts', {
+    params: { page, limit, activeOnly: activeOnly ? 'true' : undefined },
+  });
+
+  return {
+    items: response.data.items,
+    total: response.data.pagination.totalCount,
+    page: response.data.pagination.currentPage,
+    limit: response.data.pagination.limit,
+    totalPages: response.data.pagination.totalPages,
+  };
+}
+
+// 알림 상세 조회
+export async function getAlertDetail(id: string): Promise<PriceAlertItem> {
+  const response = await request<BackendAlertResponse>(`/alerts/${id}`);
+  return response.data;
+}
+
+// 알림 생성
+export async function createAlert(data: CreateAlertRequest): Promise<PriceAlertItem> {
+  const response = await request<BackendAlertResponse>('/alerts', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+  return response.data;
+}
+
+// 알림 수정
+export async function updateAlert(
+  id: string,
+  data: UpdateAlertRequest
+): Promise<PriceAlertItem> {
+  const response = await request<BackendAlertResponse>(`/alerts/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+  return response.data;
+}
+
+// 알림 삭제
+export async function deleteAlert(id: string): Promise<{ message: string }> {
+  return request<{ message: string }>(`/alerts/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+// ========== 알림 메시지 API ==========
+
+// 백엔드 알림 메시지 목록 응답 타입 (내부 사용)
+interface BackendNotificationListResponse {
+  success: boolean;
+  data: {
+    items: NotificationItem[];
+    pagination: {
+      currentPage: number;
+      totalPages: number;
+      totalCount: number;
+      limit: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
+  };
+}
+
+// 알림 메시지 목록 조회
+export async function getNotificationList(
+  page: number = 1,
+  limit: number = 10,
+  unreadOnly: boolean = false
+): Promise<NotificationListResponse> {
+  const response = await request<BackendNotificationListResponse>('/notifications', {
+    params: { page, limit, unreadOnly: unreadOnly ? 'true' : undefined },
+  });
+
+  return {
+    items: response.data.items,
+    total: response.data.pagination.totalCount,
+    page: response.data.pagination.currentPage,
+    limit: response.data.pagination.limit,
+    totalPages: response.data.pagination.totalPages,
+  };
+}
+
+// 읽지 않은 알림 개수 조회
+export async function getUnreadNotificationCount(): Promise<number> {
+  const response = await request<{ success: boolean; data: { count: number } }>(
+    '/notifications/unread-count'
+  );
+  return response.data.count;
+}
+
+// 알림 읽음 처리
+export async function markNotificationAsRead(id: string): Promise<void> {
+  await request(`/notifications/${id}/read`, {
+    method: 'PATCH',
+  });
+}
+
+// 모든 알림 읽음 처리
+export async function markAllNotificationsAsRead(): Promise<{ updatedCount: number }> {
+  const response = await request<{ success: boolean; data: { updatedCount: number } }>(
+    '/notifications/read-all',
+    { method: 'POST' }
+  );
+  return response.data;
+}
+
+// 알림 삭제
+export async function deleteNotification(id: string): Promise<{ message: string }> {
+  return request<{ message: string }>(`/notifications/${id}`, {
+    method: 'DELETE',
+  });
 }

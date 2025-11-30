@@ -37,6 +37,13 @@ enum Platform {
   HELLOMARKET // 헬로마켓
 }
 
+// 알림 타입 Enum
+enum NotificationType {
+  PRICE_DROP   // 목표가격 도달
+  PRICE_CHANGE // 가격 변동
+  SYSTEM       // 시스템 알림
+}
+
 // 사용자 모델
 model User {
   id        String   @id @default(cuid())
@@ -47,6 +54,8 @@ model User {
 
   recommendations PriceRecommendation[]
   bookmarks       Bookmark[]
+  alerts          PriceAlert[]
+  notifications   Notification[]
 
   @@map("users")
 }
@@ -126,4 +135,57 @@ model Bookmark {
   @@unique([userId, recommendationId])
   @@index([userId, createdAt(sort: Desc)])
   @@map("bookmarks")
+}
+
+// 가격 알림 모델
+model PriceAlert {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+
+  category     Category
+  productName  String    @map("product_name")
+  modelName    String?   @map("model_name")
+  condition    Condition
+
+  targetPrice  Int       @map("target_price")  // 목표 가격 (이 가격 이하면 알림)
+  currentPrice Int?      @map("current_price") // 마지막 확인된 가격
+
+  isActive     Boolean   @default(true) @map("is_active")
+  lastCheckedAt DateTime? @map("last_checked_at")
+  notifiedAt   DateTime? @map("notified_at")   // 마지막 알림 발송 시간
+
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+
+  @@index([userId, isActive])
+  @@index([isActive, category])
+  @@index([isActive, lastCheckedAt])
+  @@map("price_alerts")
+}
+
+// 알림 메시지 모델
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  alertId   String?  @map("alert_id")
+
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+
+  isRead    Boolean   @default(false) @map("is_read")
+  readAt    DateTime? @map("read_at")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alert PriceAlert? @relation(fields: [alertId], references: [id], onDelete: SetNull)
+
+  @@index([userId, isRead, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("notifications")
 }
