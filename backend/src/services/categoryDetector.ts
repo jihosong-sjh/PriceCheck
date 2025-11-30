@@ -1,9 +1,99 @@
 /**
  * 카테고리 자동 추정 서비스
  * 제품명에서 키워드를 분석하여 카테고리를 추정합니다.
+ * 네이버 쇼핑 API 카테고리 매핑도 지원합니다.
  */
 
 import type { Category } from '../utils/validators.js';
+
+// 네이버 쇼핑 API 카테고리 → 내부 카테고리 매핑
+const NAVER_CATEGORY_MAP: Record<string, Category> = {
+  // 스마트폰
+  '휴대폰': 'SMARTPHONE',
+  '스마트폰': 'SMARTPHONE',
+  '아이폰': 'SMARTPHONE',
+  '갤럭시': 'SMARTPHONE',
+
+  // 노트북
+  '노트북': 'LAPTOP',
+  '노트북/PC': 'LAPTOP',
+  '노트북PC': 'LAPTOP',
+  '랩탑': 'LAPTOP',
+
+  // 태블릿
+  '태블릿': 'TABLET',
+  '태블릿PC': 'TABLET',
+  '아이패드': 'TABLET',
+
+  // 스마트워치
+  '스마트워치': 'SMARTWATCH',
+  '웨어러블': 'SMARTWATCH',
+  '스마트밴드': 'SMARTWATCH',
+
+  // 이어폰/헤드폰
+  '이어폰': 'EARPHONE',
+  '헤드폰': 'EARPHONE',
+  '블루투스이어폰': 'EARPHONE',
+  '무선이어폰': 'EARPHONE',
+  '헤드셋': 'EARPHONE',
+
+  // 스피커
+  '스피커': 'SPEAKER',
+  '블루투스스피커': 'SPEAKER',
+  '사운드바': 'SPEAKER',
+
+  // 모니터
+  '모니터': 'MONITOR',
+  'PC모니터': 'MONITOR',
+  '게이밍모니터': 'MONITOR',
+
+  // 키보드/마우스
+  '키보드': 'KEYBOARD_MOUSE',
+  '마우스': 'KEYBOARD_MOUSE',
+  '기계식키보드': 'KEYBOARD_MOUSE',
+  '무선마우스': 'KEYBOARD_MOUSE',
+
+  // TV
+  'TV': 'TV',
+  '텔레비전': 'TV',
+  '스마트TV': 'TV',
+};
+
+/**
+ * 네이버 쇼핑 API 카테고리 문자열에서 내부 카테고리 추정
+ * @param category1 네이버 1차 카테고리 (예: "디지털/가전")
+ * @param category2 네이버 2차 카테고리 (예: "노트북/PC")
+ * @param category3 네이버 3차 카테고리 (예: "노트북")
+ * @param category4 네이버 4차 카테고리 (선택)
+ */
+export function mapNaverCategory(
+  category1: string,
+  category2: string,
+  category3: string,
+  category4?: string
+): Category | null {
+  // 가장 구체적인 카테고리부터 매칭 시도 (4 → 3 → 2 → 1)
+  const categories = [category4, category3, category2, category1].filter(Boolean);
+
+  for (const cat of categories) {
+    if (!cat) continue;
+
+    // 정확한 매칭
+    if (NAVER_CATEGORY_MAP[cat]) {
+      return NAVER_CATEGORY_MAP[cat];
+    }
+
+    // 부분 매칭 (카테고리 이름에 키워드가 포함된 경우)
+    const lowerCat = cat.toLowerCase();
+    for (const [keyword, mappedCategory] of Object.entries(NAVER_CATEGORY_MAP)) {
+      if (lowerCat.includes(keyword.toLowerCase()) || keyword.toLowerCase().includes(lowerCat)) {
+        return mappedCategory;
+      }
+    }
+  }
+
+  return null;
+}
 
 // 카테고리별 키워드 매핑 (대소문자 무시, 한글/영문 포함)
 const CATEGORY_KEYWORDS: Record<Category, string[]> = {
@@ -25,6 +115,7 @@ const CATEGORY_KEYWORDS: Record<Category, string[]> = {
     '갤럭시북', 'galaxy book',
     '씽크패드', 'thinkpad',
     'xps', '레노버', 'lenovo',
+    '서피스', 'surface', '서피스북', 'surface book', '서피스 프로', 'surface pro', '서피스 랩탑', 'surface laptop',
     // 일반 키워드
     '노트북', 'laptop', 'notebook',
   ],

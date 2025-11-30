@@ -22,6 +22,7 @@ import crawler from '../services/crawler/index.js';
 import priceCalculator from '../services/priceCalculator.js';
 import { optionalAuth } from '../middleware/auth.js';
 import { detectCategoryWithConfidence } from '../services/categoryDetector.js';
+import naverShoppingService from '../services/naverShopping.js';
 
 const prisma = new PrismaClient();
 const router = Router();
@@ -278,6 +279,37 @@ interface QuickRecommendResponse extends PriceRecommendResponse {
   };
 }
 
+// 네이버 API 폴백 응답 타입
+interface NaverFallbackResponse {
+  success: true;
+  data: {
+    input: {
+      productName: string;
+      condition: string;
+      conditionName: string;
+    };
+    recommendation: {
+      recommendedPrice: number;
+      priceMin: number;
+      priceMax: number;
+      averagePrice: number;
+      medianPrice: number;
+      confidence: string;
+      sampleCount: number;
+    };
+    marketDataSnapshot: Array<{
+      title: string;
+      price: number;
+      link: string;
+      mallName: string;
+      brand: string;
+      category: string;
+    }>;
+    source: 'naver_shopping';
+    notice: string;
+  };
+}
+
 /**
  * POST /api/price/quick-recommend
  * 간편 가격 추천 (카테고리 자동 추정)
@@ -289,7 +321,7 @@ router.post(
   optionalAuth,
   async (
     req: Request,
-    res: Response<QuickRecommendResponse | ErrorResponse>,
+    res: Response<QuickRecommendResponse | NaverFallbackResponse | ErrorResponse>,
     next: NextFunction
   ) => {
     try {
@@ -297,23 +329,78 @@ router.post(
       const { productName, modelName, condition } = quickRecommendRequestSchema.parse(req.body);
 
       // 2. 카테고리 자동 추정
-      const detection = detectCategoryWithConfidence(productName);
+      let detection = detectCategoryWithConfidence(productName);
+      let categorySource: 'keyword' | 'naver' = 'keyword';
 
+      // 3. 키워드 기반 추정 실패 시 네이버 API로 카테고리 추정 시도
       if (!detection.category) {
-        return res.status(400).json({
+        console.log(`[간편 검색] 키워드 카테고리 추정 실패, 네이버 API 시도: ${productName}`);
+
+        const naverCategory = await naverShoppingService.detectCategoryFromSearch(productName);
+
+        if (naverCategory) {
+          detection = {
+            category: naverCategory,
+            confidence: 'medium',
+            score: 5,
+          };
+          categorySource = 'naver';
+          console.log(`[간편 검색] 네이버 API 카테고리 추정 성공: ${naverCategory}`);
+        }
+      }
+
+      // 4. 네이버 API로도 카테고리 추정 실패 시 → 네이버 쇼핑 가격 데이터로 폴백
+      if (!detection.category) {
+        console.log(`[간편 검색] 카테고리 추정 실패, 네이버 쇼핑 가격 데이터로 폴백: ${productName}`);
+
+        const naverPriceData = await naverShoppingService.getPriceData(productName, 20);
+
+        if (naverPriceData && naverPriceData.priceStats.sampleCount > 0) {
+          // 중고가 추정 (신품 가격의 60~70% 적용)
+          const usedPriceRatio = condition === 'GOOD' ? 0.7 : condition === 'FAIR' ? 0.6 : 0.5;
+          const recommendedPrice = Math.round(naverPriceData.priceStats.median * usedPriceRatio);
+
+          console.log(`[간편 검색] 네이버 쇼핑 폴백 완료 - 신품 중앙값: ${naverPriceData.priceStats.median}, 추천가: ${recommendedPrice}`);
+
+          return res.json({
+            success: true,
+            data: {
+              input: {
+                productName,
+                condition,
+                conditionName: CONDITION_LABELS[condition],
+              },
+              recommendation: {
+                recommendedPrice,
+                priceMin: Math.round(naverPriceData.priceStats.min * usedPriceRatio),
+                priceMax: Math.round(naverPriceData.priceStats.max * usedPriceRatio),
+                averagePrice: Math.round(naverPriceData.priceStats.average * usedPriceRatio),
+                medianPrice: Math.round(naverPriceData.priceStats.median * usedPriceRatio),
+                confidence: 'low',
+                sampleCount: naverPriceData.priceStats.sampleCount,
+              },
+              marketDataSnapshot: naverPriceData.items,
+              source: 'naver_shopping',
+              notice: '중고 거래 데이터가 부족하여 네이버 쇼핑 신품 가격을 기반으로 추정한 가격입니다. 실제 중고 거래가와 차이가 있을 수 있습니다.',
+            },
+          });
+        }
+
+        // 네이버 쇼핑에서도 데이터를 찾지 못한 경우
+        return res.status(404).json({
           success: false,
           error: {
-            code: 'CATEGORY_DETECTION_FAILED',
-            message: '제품 카테고리를 자동으로 추정할 수 없습니다. 제품명을 더 구체적으로 입력해주세요. (예: "아이폰 15 프로", "맥북 에어 M2")',
+            code: 'NO_DATA_FOUND',
+            message: '해당 제품의 가격 정보를 찾을 수 없습니다. 제품명을 확인해주세요.',
           },
         });
       }
 
       const category = detection.category;
 
-      console.log(`[간편 검색] 카테고리 추정: ${productName} → ${category} (신뢰도: ${detection.confidence}, 점수: ${detection.score})`);
+      console.log(`[간편 검색] 카테고리 추정: ${productName} → ${category} (소스: ${categorySource}, 신뢰도: ${detection.confidence}, 점수: ${detection.score})`);
 
-      // 3. 크롤링 실행
+      // 5. 크롤링 실행
       console.log(`[간편 검색] 시작 - ${productName} ${modelName || ''} (${category}, ${condition})`);
 
       const crawlResult = await crawler.crawlAll(

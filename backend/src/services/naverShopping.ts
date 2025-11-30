@@ -4,9 +4,11 @@
  */
 
 import axios from 'axios';
+import { mapNaverCategory } from './categoryDetector.js';
+import type { Category } from '../utils/validators.js';
 
 // 네이버 쇼핑 검색 결과 아이템 타입
-interface NaverShoppingItem {
+export interface NaverShoppingItem {
   title: string;
   link: string;
   image: string;
@@ -191,6 +193,173 @@ class NaverShoppingService {
 
     return Array.from(suggestions);
   }
+
+  /**
+   * 검색 결과에서 카테고리 추정
+   * 여러 검색 결과의 카테고리를 분석하여 가장 많이 나온 카테고리 반환
+   */
+  async detectCategoryFromSearch(query: string): Promise<Category | null> {
+    const items = await this.searchRaw(query, 10);
+
+    if (items.length === 0) {
+      return null;
+    }
+
+    // 카테고리별 빈도 계산
+    const categoryCount = new Map<Category, number>();
+
+    for (const item of items) {
+      const category = mapNaverCategory(
+        item.category1,
+        item.category2,
+        item.category3,
+        item.category4
+      );
+
+      if (category) {
+        categoryCount.set(category, (categoryCount.get(category) || 0) + 1);
+      }
+    }
+
+    // 가장 빈도가 높은 카테고리 반환
+    let maxCount = 0;
+    let bestCategory: Category | null = null;
+
+    for (const [category, count] of categoryCount) {
+      if (count > maxCount) {
+        maxCount = count;
+        bestCategory = category;
+      }
+    }
+
+    return bestCategory;
+  }
+
+  /**
+   * Raw 검색 결과 반환 (NaverShoppingItem 배열)
+   */
+  async searchRaw(query: string, display: number = 10): Promise<NaverShoppingItem[]> {
+    if (!this.isConfigured()) {
+      return [];
+    }
+
+    // 캐시 키 (raw용)
+    const cacheKey = `raw_${query}`;
+    const cached = cache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return cached.data as unknown as NaverShoppingItem[];
+    }
+
+    try {
+      const response = await axios.get<NaverShoppingResponse>(this.baseUrl, {
+        params: {
+          query,
+          display: Math.min(display, 100),
+          sort: 'sim',
+        },
+        headers: {
+          'X-Naver-Client-Id': this.clientId,
+          'X-Naver-Client-Secret': this.clientSecret,
+        },
+        timeout: 5000,
+      });
+
+      const items = response.data.items.map((item) => ({
+        ...item,
+        title: this.stripHtml(item.title),
+      }));
+
+      // 캐시에 저장
+      cache.set(cacheKey, { data: items as unknown as NaverSearchResult[], timestamp: Date.now() });
+
+      return items;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(`[NaverShopping] API 오류:`, error.response?.status, error.message);
+      }
+      return [];
+    }
+  }
+
+  /**
+   * 가격 정보 조회 (폴백용)
+   * 네이버 쇼핑 API에서 가격 데이터를 가져와서 시세 정보 제공
+   */
+  async getPriceData(query: string, display: number = 20): Promise<NaverPriceData | null> {
+    const items = await this.searchRaw(query, display);
+
+    if (items.length === 0) {
+      return null;
+    }
+
+    // 가격 추출 (0원 제외)
+    const prices = items
+      .map((item) => parseInt(item.lprice, 10))
+      .filter((price) => price > 0);
+
+    if (prices.length === 0) {
+      return null;
+    }
+
+    // 통계 계산
+    prices.sort((a, b) => a - b);
+    const sum = prices.reduce((acc, p) => acc + p, 0);
+    const average = Math.round(sum / prices.length);
+    const median = prices[Math.floor(prices.length / 2)];
+    const min = prices[0];
+    const max = prices[prices.length - 1];
+
+    // 카테고리 추정
+    const category = mapNaverCategory(
+      items[0].category1,
+      items[0].category2,
+      items[0].category3,
+      items[0].category4
+    );
+
+    return {
+      query,
+      category,
+      priceStats: {
+        average,
+        median,
+        min,
+        max,
+        sampleCount: prices.length,
+      },
+      items: items.slice(0, 10).map((item) => ({
+        title: item.title,
+        price: parseInt(item.lprice, 10),
+        link: item.link,
+        mallName: item.mallName,
+        brand: item.brand,
+        category: [item.category1, item.category2, item.category3]
+          .filter(Boolean)
+          .join(' > '),
+      })),
+    };
+  }
+}
+
+// 가격 데이터 타입
+export interface NaverPriceData {
+  query: string;
+  category: Category | null;
+  priceStats: {
+    average: number;
+    median: number;
+    min: number;
+    max: number;
+    sampleCount: number;
+  };
+  items: Array<{
+    title: string;
+    price: number;
+    link: string;
+    mallName: string;
+    brand: string;
+    category: string;
+  }>;
 }
 
 // 싱글톤 인스턴스
