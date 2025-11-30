@@ -3,7 +3,7 @@
  * 이미지에서 제품 정보(카테고리, 브랜드, 모델명)를 인식합니다.
  */
 
-import vision from '@google-cloud/vision';
+import { ImageAnnotatorClient } from '@google-cloud/vision';
 import type { Category } from '@prisma/client';
 
 /**
@@ -24,13 +24,13 @@ async function downloadImageAsBase64(imageUrl: string): Promise<string> {
  * - GOOGLE_CREDENTIALS_JSON 환경변수가 있으면 JSON 파싱하여 사용 (Railway 등 클라우드 배포용)
  * - 없으면 GOOGLE_APPLICATION_CREDENTIALS 파일 경로 방식 사용 (로컬 개발용)
  */
-function createVisionClient(): vision.ImageAnnotatorClient {
+function createVisionClient(): ImageAnnotatorClient {
   if (process.env.GOOGLE_CREDENTIALS_JSON) {
     const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
-    return new vision.ImageAnnotatorClient({ credentials });
+    return new ImageAnnotatorClient({ credentials });
   }
   // 기존 방식: GOOGLE_APPLICATION_CREDENTIALS 환경변수로 파일 경로 지정
-  return new vision.ImageAnnotatorClient();
+  return new ImageAnnotatorClient();
 }
 
 const client = createVisionClient();
@@ -346,26 +346,26 @@ export async function recognizeProduct(imageUrl: string): Promise<RecognitionRes
 
     // 라벨 추출
     const labels = response.labelAnnotations || [];
-    result.rawLabels = labels.map((l) => l.description?.toLowerCase() || '');
+    result.rawLabels = labels.map((l: { description?: string | null }) => l.description?.toLowerCase() || '');
 
     // 텍스트 추출 (전체 텍스트)
     const textAnnotations = response.textAnnotations || [];
-    const fullText = textAnnotations[0]?.description?.toLowerCase() || '';
-    result.rawTexts = fullText.split('\n').filter((t) => t.trim());
+    const fullText = (textAnnotations[0] as { description?: string | null })?.description?.toLowerCase() || '';
+    result.rawTexts = fullText.split('\n').filter((t: string) => t.trim());
 
     // 로고 추출
     const logos = response.logoAnnotations || [];
-    const logoTexts = logos.map((l) => l.description?.toLowerCase() || '');
+    const logoTexts = logos.map((l: { description?: string | null }) => l.description?.toLowerCase() || '');
 
     // 웹 감지 결과 추출 (제품명 추론에 매우 유용)
     const webDetection = response.webDetection;
     const webEntities = webDetection?.webEntities || [];
     const webLabels = webEntities
-      .filter((e) => e.description && (e.score || 0) > 0.5)
-      .map((e) => e.description?.toLowerCase() || '');
+      .filter((e: { description?: string | null; score?: number | null }) => e.description && (e.score || 0) > 0.5)
+      .map((e: { description?: string | null }) => e.description?.toLowerCase() || '');
 
     const bestGuessLabels = webDetection?.bestGuessLabels || [];
-    const bestGuesses = bestGuessLabels.map((l) => l.label?.toLowerCase() || '');
+    const bestGuesses = bestGuessLabels.map((l: { label?: string | null }) => l.label?.toLowerCase() || '');
 
     // rawLabels에 웹 감지 결과도 포함
     result.rawLabels = [...result.rawLabels, ...webLabels, ...bestGuesses];
