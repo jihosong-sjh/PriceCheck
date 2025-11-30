@@ -10,6 +10,7 @@ import bookmarkRouter from './api/bookmark.js';
 import recognizeRouter from './api/recognize.js';
 import alertRouter from './api/alert.js';
 import notificationRouter from './api/notification.js';
+import searchRouter from './api/search.js';
 import { startPriceAlertJob } from './jobs/priceAlertJob.js';
 
 // 환경 변수 로드
@@ -40,6 +41,7 @@ app.use('/api/bookmarks', bookmarkRouter);
 app.use('/api/recognize', recognizeRouter);
 app.use('/api/alerts', alertRouter);
 app.use('/api/notifications', notificationRouter);
+app.use('/api/search', searchRouter);
 
 // 404 처리
 app.use((_req: Request, res: Response) => {

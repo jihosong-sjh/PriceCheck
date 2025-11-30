@@ -2,21 +2,26 @@
  * 가격 추천 API 라우트
  * GET /api/price/categories - 카테고리 목록 조회
  * POST /api/price/recommend - 가격 추천 요청
+ * POST /api/price/quick-recommend - 간편 가격 추천 (카테고리 자동 추정)
  */
 
 import { Router, type Request, type Response, type NextFunction } from 'express';
-import { ZodError } from 'zod';
+import { z, ZodError } from 'zod';
 import { PrismaClient, type Category, type Condition } from '@prisma/client';
 import {
   priceRecommendRequestSchema,
   CategoryEnum,
+  ConditionEnum,
   CATEGORY_LABELS,
   CONDITION_LABELS,
+  productNameSchema,
+  modelNameSchema,
   type PriceRecommendRequest,
 } from '../utils/validators.js';
 import crawler from '../services/crawler/index.js';
 import priceCalculator from '../services/priceCalculator.js';
 import { optionalAuth } from '../middleware/auth.js';
+import { detectCategoryWithConfidence } from '../services/categoryDetector.js';
 
 const prisma = new PrismaClient();
 const router = Router();
@@ -255,5 +260,187 @@ router.get('/conditions', (_req: Request, res: Response) => {
     },
   });
 });
+
+// 간편 검색 요청 스키마
+const quickRecommendRequestSchema = z.object({
+  productName: productNameSchema,
+  modelName: modelNameSchema,
+  condition: ConditionEnum.optional().default('FAIR'),
+});
+
+// 간편 검색 응답 타입 (기존 응답 + 자동 추정 정보)
+interface QuickRecommendResponse extends PriceRecommendResponse {
+  data: PriceRecommendResponse['data'] & {
+    categoryDetection?: {
+      confidence: 'high' | 'medium' | 'low';
+      score: number;
+    };
+  };
+}
+
+/**
+ * POST /api/price/quick-recommend
+ * 간편 가격 추천 (카테고리 자동 추정)
+ * - 제품명만 입력하면 카테고리를 자동으로 추정하여 가격 추천
+ * - 상태는 선택 (기본값: FAIR)
+ */
+router.post(
+  '/quick-recommend',
+  optionalAuth,
+  async (
+    req: Request,
+    res: Response<QuickRecommendResponse | ErrorResponse>,
+    next: NextFunction
+  ) => {
+    try {
+      // 1. 요청 검증
+      const { productName, modelName, condition } = quickRecommendRequestSchema.parse(req.body);
+
+      // 2. 카테고리 자동 추정
+      const detection = detectCategoryWithConfidence(productName);
+
+      if (!detection.category) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'CATEGORY_DETECTION_FAILED',
+            message: '제품 카테고리를 자동으로 추정할 수 없습니다. 제품명을 더 구체적으로 입력해주세요. (예: "아이폰 15 프로", "맥북 에어 M2")',
+          },
+        });
+      }
+
+      const category = detection.category;
+
+      console.log(`[간편 검색] 카테고리 추정: ${productName} → ${category} (신뢰도: ${detection.confidence}, 점수: ${detection.score})`);
+
+      // 3. 크롤링 실행
+      console.log(`[간편 검색] 시작 - ${productName} ${modelName || ''} (${category}, ${condition})`);
+
+      const crawlResult = await crawler.crawlAll(
+        productName,
+        modelName,
+        category,
+        {
+          maxItemsPerPlatform: 20,
+          timeout: 30000,
+        }
+      );
+
+      console.log(`[간편 검색] 크롤링 완료 - ${crawlResult.stats.totalItems}개 수집 (${crawlResult.stats.crawlDuration}ms)`);
+
+      // 4. 시세 데이터 부족 확인
+      if (crawlResult.items.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: {
+            code: 'NO_MARKET_DATA',
+            message: '해당 제품의 시세 데이터를 찾을 수 없습니다. 제품명을 확인해주세요.',
+          },
+        });
+      }
+
+      // 5. 가격 계산
+      const { calculation, marketDataSnapshot } = await priceCalculator.getRecommendedPrice(
+        crawlResult.items,
+        condition,
+        category
+      );
+
+      // 6. 계산된 가격이 없는 경우
+      if (calculation.recommendedPrice === 0) {
+        return res.status(404).json({
+          success: false,
+          error: {
+            code: 'PRICE_CALCULATION_FAILED',
+            message: '유효한 시세 데이터가 부족하여 가격을 계산할 수 없습니다.',
+          },
+        });
+      }
+
+      // 7. 로그인 사용자인 경우 히스토리에 저장
+      let recommendationId: string | undefined;
+      const userId = req.user?.userId;
+
+      if (userId) {
+        try {
+          const recommendation = await prisma.priceRecommendation.create({
+            data: {
+              userId,
+              category: category as Category,
+              productName,
+              modelName,
+              condition: condition as Condition,
+              recommendedPrice: calculation.recommendedPrice,
+              priceMin: calculation.priceMin,
+              priceMax: calculation.priceMax,
+              marketDataSnapshot: JSON.parse(JSON.stringify(marketDataSnapshot)),
+            },
+          });
+          recommendationId = recommendation.id;
+          console.log(`[간편 검색] 히스토리 저장 완료 - ID: ${recommendationId}`);
+        } catch (saveError) {
+          console.error('[간편 검색] 히스토리 저장 실패:', saveError);
+        }
+      }
+
+      // 8. 성공 응답
+      const response: QuickRecommendResponse = {
+        success: true,
+        data: {
+          id: recommendationId,
+          input: {
+            category,
+            categoryName: CATEGORY_LABELS[category],
+            productName,
+            modelName,
+            condition,
+            conditionName: CONDITION_LABELS[condition],
+          },
+          recommendation: {
+            recommendedPrice: calculation.recommendedPrice,
+            priceMin: calculation.priceMin,
+            priceMax: calculation.priceMax,
+            averagePrice: calculation.averagePrice,
+            medianPrice: calculation.medianPrice,
+            confidence: calculation.confidence,
+            sampleCount: calculation.sampleCount,
+          },
+          marketDataSnapshot,
+          crawlStats: {
+            totalItems: crawlResult.stats.totalItems,
+            itemsByPlatform: crawlResult.stats.itemsByPlatform,
+            crawlDuration: crawlResult.stats.crawlDuration,
+          },
+          categoryDetection: {
+            confidence: detection.confidence as 'high' | 'medium' | 'low',
+            score: detection.score,
+          },
+        },
+      };
+
+      console.log(`[간편 검색] 완료 - 추천가격: ${calculation.recommendedPrice.toLocaleString()}원`);
+
+      return res.json(response);
+    } catch (error) {
+      // Zod 검증 오류 처리
+      if (error instanceof ZodError) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: '입력값이 올바르지 않습니다.',
+            details: error.errors.map((e) => ({
+              field: e.path.join('.'),
+              message: e.message,
+            })),
+          },
+        });
+      }
+
+      // 기타 에러는 전역 에러 핸들러로
+      return next(error);
+    }
+  }
+);
 
 export default router;

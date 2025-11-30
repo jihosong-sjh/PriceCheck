@@ -21,6 +21,11 @@ import type {
   UpdateAlertRequest,
   NotificationItem,
   NotificationListResponse,
+  AutocompleteSuggestion,
+  PopularSearchItem,
+  QuickRecommendRequest,
+  QuickRecommendResponse,
+  Category,
 } from './types';
 
 // API 기본 URL
@@ -635,4 +640,118 @@ export async function deleteNotification(id: string): Promise<{ message: string 
   return request<{ message: string }>(`/notifications/${id}`, {
     method: 'DELETE',
   });
+}
+
+// ========== 자동완성 API ==========
+
+// 백엔드 자동완성 응답 타입 (내부 사용)
+interface BackendAutocompleteResponse {
+  success: boolean;
+  data: {
+    suggestions: AutocompleteSuggestion[];
+  };
+}
+
+// 백엔드 인기 검색어 응답 타입 (내부 사용)
+interface BackendPopularSearchResponse {
+  success: boolean;
+  data: {
+    items: PopularSearchItem[];
+  };
+}
+
+// 백엔드 간편 검색 응답 타입 (내부 사용)
+interface BackendQuickRecommendResponse {
+  success: boolean;
+  data: {
+    id?: string;
+    input: {
+      category: string;
+      categoryName: string;
+      productName: string;
+      modelName?: string;
+      condition: string;
+      conditionName: string;
+    };
+    recommendation: {
+      recommendedPrice: number;
+      priceMin: number;
+      priceMax: number;
+      averagePrice: number;
+      medianPrice: number;
+      confidence: string;
+      sampleCount: number;
+    };
+    marketDataSnapshot: Array<{
+      price: number;
+      platform: string;
+      condition?: string;
+      originalUrl?: string;
+      scrapedAt: string;
+    }>;
+    crawlStats: {
+      totalItems: number;
+      itemsByPlatform: Record<string, number>;
+      crawlDuration: number;
+    };
+    categoryDetection?: {
+      confidence: 'high' | 'medium' | 'low';
+      score: number;
+    };
+  };
+}
+
+// 자동완성 조회
+export async function getAutocomplete(query: string): Promise<AutocompleteSuggestion[]> {
+  const response = await request<BackendAutocompleteResponse>('/search/autocomplete', {
+    params: { q: query },
+  });
+  return response.data.suggestions;
+}
+
+// 인기 검색어 조회
+export async function getPopularSearches(
+  category?: Category,
+  limit: number = 10
+): Promise<PopularSearchItem[]> {
+  const response = await request<BackendPopularSearchResponse>('/search/popular', {
+    params: { category, limit },
+  });
+  return response.data.items;
+}
+
+// 간편 가격 추천 (카테고리 자동 추정)
+export async function quickPriceRecommend(
+  data: QuickRecommendRequest
+): Promise<QuickRecommendResponse> {
+  const response = await request<BackendQuickRecommendResponse>('/price/quick-recommend', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+  // 백엔드 응답을 프론트엔드 형식으로 변환
+  const { id, input, recommendation, marketDataSnapshot, categoryDetection } = response.data;
+
+  return {
+    id: id || crypto.randomUUID(),
+    category: input.category as QuickRecommendResponse['category'],
+    productName: input.productName,
+    modelName: input.modelName,
+    condition: input.condition as QuickRecommendResponse['condition'],
+    recommendedPrice: recommendation.recommendedPrice,
+    priceMin: recommendation.priceMin,
+    priceMax: recommendation.priceMax,
+    marketDataSnapshot: marketDataSnapshot.map((item, index) => ({
+      id: `${index}`,
+      productName: input.productName,
+      modelName: input.modelName,
+      platform: item.platform as 'BUNJANG' | 'JOONGONARA' | 'HELLOMARKET',
+      price: item.price,
+      condition: item.condition,
+      originalUrl: item.originalUrl,
+      scrapedAt: item.scrapedAt,
+    })),
+    createdAt: new Date().toISOString(),
+    categoryDetection,
+  };
 }

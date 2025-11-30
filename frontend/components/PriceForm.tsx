@@ -29,7 +29,7 @@ export default function PriceForm({
   const [category, setCategory] = useState<Category | ''>('');
   const [productName, setProductName] = useState('');
   const [modelName, setModelName] = useState('');
-  const [condition, setCondition] = useState<Condition | ''>('');
+  const [condition, setCondition] = useState<Condition>('FAIR'); // 기본값: 중
   const [errors, setErrors] = useState<{
     category?: string;
     productName?: string;

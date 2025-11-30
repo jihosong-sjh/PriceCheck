@@ -315,6 +315,50 @@ export interface NotificationListResponse {
   totalPages: number;
 }
 
+// ========== 자동완성 타입 ==========
+
+// 자동완성 제안 항목
+export interface AutocompleteSuggestion {
+  text: string;
+  source: 'history' | 'external';
+  category?: Category;
+  categoryName?: string;
+  searchCount?: number;
+}
+
+// 자동완성 응답
+export interface AutocompleteResponse {
+  suggestions: AutocompleteSuggestion[];
+}
+
+// 인기 검색어 항목
+export interface PopularSearchItem {
+  productName: string;
+  category: Category;
+  categoryName: string;
+  searchCount: number;
+}
+
+// 인기 검색어 응답
+export interface PopularSearchResponse {
+  items: PopularSearchItem[];
+}
+
+// 간편 검색 요청
+export interface QuickRecommendRequest {
+  productName: string;
+  condition?: Condition;
+  modelName?: string;
+}
+
+// 간편 검색 응답 (카테고리 자동 추정 정보 포함)
+export interface QuickRecommendResponse extends PriceRecommendResponse {
+  categoryDetection?: {
+    confidence: 'high' | 'medium' | 'low';
+    score: number;
+  };
+}
+
 // ========== UI 상태 타입 ==========
 
 // 로딩 상태
