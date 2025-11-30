@@ -52,7 +52,7 @@ export default function PriceDistributionChart({
 
   return (
     <div className="card">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">가격 분포</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">가격 분포</h3>
 
       {/* 차트 */}
       <div className="h-48 sm:h-56">
@@ -61,15 +61,17 @@ export default function PriceDistributionChart({
             data={chartData}
             margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
           >
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-gray-200 dark:stroke-gray-700" />
             <XAxis
               dataKey="name"
-              tick={{ fontSize: 12, fill: '#6b7280' }}
-              axisLine={{ stroke: '#e5e7eb' }}
+              tick={{ fontSize: 12 }}
+              className="fill-gray-500 dark:fill-gray-400"
+              axisLine={false}
               tickLine={false}
             />
             <YAxis
-              tick={{ fontSize: 12, fill: '#6b7280' }}
+              tick={{ fontSize: 12 }}
+              className="fill-gray-500 dark:fill-gray-400"
               axisLine={false}
               tickLine={false}
               allowDecimals={false}
@@ -79,9 +81,9 @@ export default function PriceDistributionChart({
                 if (active && payload && payload.length) {
                   const data = payload[0].payload;
                   return (
-                    <div className="bg-white shadow-lg rounded-lg p-3 border border-gray-200">
-                      <p className="text-sm text-gray-500">{data.range}</p>
-                      <p className="text-lg font-semibold text-gray-900">
+                    <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{data.range}</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-white">
                         {data.count}개 매물
                       </p>
                     </div>
@@ -114,23 +116,23 @@ export default function PriceDistributionChart({
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded bg-blue-500" />
-            <span className="text-gray-600">매물 수</span>
+            <span className="text-gray-600 dark:text-gray-300">매물 수</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-4 h-0.5 bg-red-500" style={{ borderTop: '2px dashed #ef4444' }} />
-            <span className="text-gray-600">추천가</span>
+            <span className="text-gray-600 dark:text-gray-300">추천가</span>
           </div>
         </div>
-        <div className="text-gray-500">
-          추천가: <span className="font-semibold text-gray-900">{formatPrice(recommendedPrice)}</span>
+        <div className="text-gray-500 dark:text-gray-400">
+          추천가: <span className="font-semibold text-gray-900 dark:text-white">{formatPrice(recommendedPrice)}</span>
         </div>
       </div>
 
       {/* 가격 범위 */}
       {priceMin !== undefined && priceMax !== undefined && (
-        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between text-sm">
-          <span className="text-gray-500">예상 거래 범위</span>
-          <span className="font-medium text-gray-700">
+        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between text-sm">
+          <span className="text-gray-500 dark:text-gray-400">예상 거래 범위</span>
+          <span className="font-medium text-gray-700 dark:text-gray-300">
             {formatPrice(priceMin)} ~ {formatPrice(priceMax)}
           </span>
         </div>

@@ -123,10 +123,10 @@ export default function PriceExplanationCard({
       >
         <div className="flex items-center gap-2">
           <span className="text-xl">💡</span>
-          <h3 className="text-lg font-semibold text-gray-900">가격 산출 과정</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">가격 산출 과정</h3>
         </div>
         <svg
-          className={`w-5 h-5 text-gray-400 transition-transform ${
+          className={`w-5 h-5 text-gray-400 dark:text-gray-500 transition-transform ${
             isExpanded ? 'rotate-180' : ''
           }`}
           fill="none"
@@ -144,7 +144,7 @@ export default function PriceExplanationCard({
 
       {/* 간략 요약 (접혀있을 때) */}
       {!isExpanded && (
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
           {sampleCount}개 매물의 중앙값에 상태 &apos;{CONDITION_LABELS[condition]}&apos; 조건을 적용하여
           산출된 가격입니다.
         </p>
@@ -157,29 +157,29 @@ export default function PriceExplanationCard({
             <div key={item.step} className="flex gap-3">
               {/* 아이콘 */}
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center">
                   {item.icon}
                 </div>
               </div>
 
               {/* 내용 */}
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900">{item.title}</p>
-                <p className="text-sm text-gray-600">{item.description}</p>
+                <p className="font-medium text-gray-900 dark:text-white">{item.title}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{item.description}</p>
 
                 {/* 연결선 */}
                 {index < steps.length - 1 && (
-                  <div className="ml-4 mt-2 mb-2 border-l-2 border-dashed border-gray-200 h-4" />
+                  <div className="ml-4 mt-2 mb-2 border-l-2 border-dashed border-gray-200 dark:border-gray-700 h-4" />
                 )}
               </div>
             </div>
           ))}
 
           {/* 최종 결과 */}
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
-              <span className="text-gray-700 font-medium">최종 추천 가격</span>
-              <span className="text-2xl font-bold text-primary-600">
+              <span className="text-gray-700 dark:text-gray-300 font-medium">최종 추천 가격</span>
+              <span className="text-2xl font-bold text-primary-600 dark:text-primary-400">
                 {formatPrice(recommendedPrice)}
               </span>
             </div>

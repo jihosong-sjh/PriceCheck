@@ -55,7 +55,7 @@ export default function PlatformComparisonChart({
 
   return (
     <div className="card">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">플랫폼별 평균 가격</h3>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">플랫폼별 평균 가격</h3>
 
       {/* 차트 */}
       <div className="h-40 sm:h-48">
@@ -65,10 +65,11 @@ export default function PlatformComparisonChart({
             layout="vertical"
             margin={{ top: 0, right: 60, left: 0, bottom: 0 }}
           >
-            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" />
+            <CartesianGrid strokeDasharray="3 3" horizontal={false} className="stroke-gray-200 dark:stroke-gray-700" />
             <XAxis
               type="number"
-              tick={{ fontSize: 11, fill: '#6b7280' }}
+              tick={{ fontSize: 11 }}
+              className="fill-gray-500 dark:fill-gray-400"
               axisLine={false}
               tickLine={false}
               tickFormatter={(value) => `${Math.round(value / 10000)}만`}
@@ -76,7 +77,8 @@ export default function PlatformComparisonChart({
             <YAxis
               type="category"
               dataKey="name"
-              tick={{ fontSize: 12, fill: '#374151', fontWeight: 500 }}
+              tick={{ fontSize: 12, fontWeight: 500 }}
+              className="fill-gray-700 dark:fill-gray-300"
               axisLine={false}
               tickLine={false}
               width={80}
@@ -86,12 +88,12 @@ export default function PlatformComparisonChart({
                 if (active && payload && payload.length) {
                   const data = payload[0].payload;
                   return (
-                    <div className="bg-white shadow-lg rounded-lg p-3 border border-gray-200">
-                      <p className="font-semibold text-gray-900 mb-1">{data.name}</p>
-                      <p className="text-sm text-gray-600">
+                    <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                      <p className="font-semibold text-gray-900 dark:text-white mb-1">{data.name}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         평균: <span className="font-medium">{formatPrice(data.avgPrice)}</span>
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
                         {data.count}개 매물 (
                         {formatPrice(data.minPrice)} ~ {formatPrice(data.maxPrice)})
                       </p>
@@ -122,20 +124,20 @@ export default function PlatformComparisonChart({
                 className="w-3 h-3 rounded"
                 style={{ backgroundColor: getPlatformColor(data.platform) }}
               />
-              <span className="text-gray-600">{data.name}</span>
-              <span className="text-gray-400 text-xs">({data.count}개)</span>
+              <span className="text-gray-600 dark:text-gray-300">{data.name}</span>
+              <span className="text-gray-400 dark:text-gray-500 text-xs">({data.count}개)</span>
             </div>
-            <span className="font-medium text-gray-900">{formatPrice(data.avgPrice)}</span>
+            <span className="font-medium text-gray-900 dark:text-white">{formatPrice(data.avgPrice)}</span>
           </div>
         ))}
       </div>
 
       {/* 비교 정보 */}
       {priceDiff > 0 && (
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <p className="text-sm text-gray-600 flex items-start gap-2">
+        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+          <p className="text-sm text-gray-600 dark:text-gray-300 flex items-start gap-2">
             <svg
-              className="w-5 h-5 text-blue-500 flex-shrink-0"
+              className="w-5 h-5 text-blue-500 dark:text-blue-400 flex-shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -150,7 +152,7 @@ export default function PlatformComparisonChart({
             <span>
               <span className="font-medium">{PLATFORM_LABELS[highest.platform]}</span>이{' '}
               <span className="font-medium">{PLATFORM_LABELS[lowest.platform]}</span>보다 평균{' '}
-              <span className="font-semibold text-blue-600">{priceDiffPercent}%</span> 높습니다.
+              <span className="font-semibold text-blue-600 dark:text-blue-400">{priceDiffPercent}%</span> 높습니다.
             </span>
           </p>
         </div>
