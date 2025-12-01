@@ -8,6 +8,7 @@
 import bcrypt from 'bcryptjs';
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
+import { AppError } from '../middleware/errorHandler.js';
 
 const prisma = new PrismaClient();
 
@@ -86,7 +87,7 @@ export async function signup(email: string, password: string): Promise<AuthResul
   });
 
   if (existingUser) {
-    throw new Error('이미 등록된 이메일입니다.');
+    throw new AppError('이미 등록된 이메일입니다.', 409);
   }
 
   // 비밀번호 해싱
@@ -125,14 +126,14 @@ export async function login(email: string, password: string): Promise<AuthResult
   });
 
   if (!user) {
-    throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
+    throw new AppError('가입되지 않은 이메일이거나 탈퇴한 계정입니다.', 401);
   }
 
   // 비밀번호 검증
   const isValidPassword = await verifyPassword(password, user.password);
 
   if (!isValidPassword) {
-    throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
+    throw new AppError('이메일 또는 비밀번호가 올바르지 않습니다.', 401);
   }
 
   // JWT 토큰 생성
@@ -181,4 +182,71 @@ export async function getUserByEmail(email: string): Promise<UserInfo | null> {
   });
 
   return user;
+}
+
+/**
+ * 비밀번호 변경
+ * - 현재 비밀번호 확인
+ * - 새 비밀번호가 기존과 다른지 확인
+ * - 비밀번호 업데이트
+ */
+export async function changePassword(
+  userId: string,
+  currentPassword: string,
+  newPassword: string
+): Promise<void> {
+  // 사용자 조회 (비밀번호 포함)
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new AppError('사용자를 찾을 수 없습니다.', 404);
+  }
+
+  // 현재 비밀번호 확인
+  const isValidPassword = await verifyPassword(currentPassword, user.password);
+  if (!isValidPassword) {
+    throw new AppError('현재 비밀번호가 올바르지 않습니다.', 401);
+  }
+
+  // 새 비밀번호가 기존과 같은지 확인
+  const isSamePassword = await verifyPassword(newPassword, user.password);
+  if (isSamePassword) {
+    throw new AppError('새 비밀번호는 현재 비밀번호와 달라야 합니다.', 400);
+  }
+
+  // 새 비밀번호 해싱 및 업데이트
+  const hashedPassword = await hashPassword(newPassword);
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password: hashedPassword },
+  });
+}
+
+/**
+ * 회원 탈퇴
+ * - 비밀번호 확인
+ * - 사용자 삭제 (Cascade로 관련 데이터 자동 삭제)
+ */
+export async function deleteAccount(userId: string, password: string): Promise<void> {
+  // 사용자 조회 (비밀번호 포함)
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new AppError('사용자를 찾을 수 없습니다.', 404);
+  }
+
+  // 비밀번호 확인
+  const isValidPassword = await verifyPassword(password, user.password);
+  if (!isValidPassword) {
+    throw new AppError('비밀번호가 올바르지 않습니다.', 401);
+  }
+
+  // 사용자 삭제 (Cascade로 Bookmark, PriceAlert, Notification 자동 삭제)
+  await prisma.user.delete({
+    where: { id: userId },
+  });
 }

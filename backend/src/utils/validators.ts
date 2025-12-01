@@ -83,6 +83,19 @@ export const loginSchema = z.object({
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
+// 비밀번호 변경 요청 스키마
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, '현재 비밀번호를 입력해주세요.'),
+  newPassword: passwordSchema,
+});
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
+// 회원 탈퇴 요청 스키마
+export const deleteAccountSchema = z.object({
+  password: z.string().min(1, '비밀번호를 입력해주세요.'),
+});
+export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
+
 // ========== 가격 추천 관련 스키마 ==========
 
 // 제품명 검증
