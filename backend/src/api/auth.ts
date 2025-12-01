@@ -8,10 +8,12 @@
 import { Router, type Request, type Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { requireAuth } from '../middleware/auth.js';
-import { signup, login, getUserById } from '../services/auth.js';
+import { signup, login, getUserById, changePassword, deleteAccount } from '../services/auth.js';
 import {
   signupSchema,
   loginSchema,
+  changePasswordSchema,
+  deleteAccountSchema,
   validateBody,
 } from '../utils/validators.js';
 
@@ -104,6 +106,46 @@ router.get(
           createdAt: user.createdAt,
         },
       },
+    });
+  })
+);
+
+/**
+ * PUT /api/auth/password
+ * 비밀번호 변경
+ */
+router.put(
+  '/password',
+  requireAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user!.userId;
+    const { currentPassword, newPassword } = validateBody(changePasswordSchema, req.body);
+
+    await changePassword(userId, currentPassword, newPassword);
+
+    res.json({
+      success: true,
+      message: '비밀번호가 변경되었습니다.',
+    });
+  })
+);
+
+/**
+ * DELETE /api/auth/account
+ * 회원 탈퇴
+ */
+router.delete(
+  '/account',
+  requireAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user!.userId;
+    const { password } = validateBody(deleteAccountSchema, req.body);
+
+    await deleteAccount(userId, password);
+
+    res.json({
+      success: true,
+      message: '계정이 삭제되었습니다.',
     });
   })
 );

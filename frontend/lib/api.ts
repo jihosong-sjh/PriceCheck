@@ -238,6 +238,32 @@ export async function getCurrentUser(): Promise<User> {
   return request<User>('/auth/me');
 }
 
+// 비밀번호 변경 요청 타입
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+// 비밀번호 변경
+export async function changePassword(data: ChangePasswordRequest): Promise<{ message: string }> {
+  const response = await request<{ success: boolean; message: string }>('/auth/password', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+  return { message: response.message };
+}
+
+// 회원 탈퇴
+export async function deleteAccount(password: string): Promise<{ message: string }> {
+  const response = await request<{ success: boolean; message: string }>('/auth/account', {
+    method: 'DELETE',
+    body: JSON.stringify({ password }),
+  });
+  // 탈퇴 후 토큰 삭제
+  setAuthToken(null);
+  return { message: response.message };
+}
+
 // ========== 히스토리 API ==========
 
 // 백엔드 히스토리 목록 응답 타입 (내부 사용)

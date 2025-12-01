@@ -5,19 +5,45 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showSignupPrompt, setShowSignupPrompt] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setShowSignupPrompt(false);
     setIsLoading(true);
 
     try {
+      // 1. 먼저 백엔드 API를 직접 호출하여 에러 메시지 확인
+      const checkResponse = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!checkResponse.ok) {
+        const errorData = await checkResponse.json();
+        const errorMessage = errorData.error || '로그인에 실패했습니다.';
+
+        // 가입되지 않은 이메일이거나 탈퇴한 계정일 경우 회원가입 유도
+        if (errorMessage.includes('가입되지 않은') || errorMessage.includes('탈퇴한')) {
+          setError('가입되지 않은 이메일이거나 탈퇴한 계정입니다.');
+          setShowSignupPrompt(true);
+        } else {
+          setError(errorMessage);
+        }
+        return;
+      }
+
+      // 2. 백엔드 인증 성공 시 NextAuth signIn 호출
       const result = await signIn('credentials', {
         email,
         password,
@@ -25,7 +51,7 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setError('이메일 또는 비밀번호가 올바르지 않습니다.');
+        setError('로그인 처리 중 오류가 발생했습니다.');
       } else {
         router.push('/');
         router.refresh();
@@ -50,7 +76,17 @@ export default function LoginPage() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg">
-              {error}
+              <p>{error}</p>
+              {showSignupPrompt && (
+                <p className="mt-2">
+                  <Link
+                    href="/signup"
+                    className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium underline"
+                  >
+                    새로 가입하시겠습니까?
+                  </Link>
+                </p>
+              )}
             </div>
           )}
 
