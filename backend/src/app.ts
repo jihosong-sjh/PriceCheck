@@ -1,6 +1,8 @@
 import express, { type Express, type Request, type Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { errorHandler } from './middleware/errorHandler.js';
 import priceRouter from './api/price.js';
 import uploadRouter from './api/upload.js';
@@ -13,8 +15,14 @@ import notificationRouter from './api/notification.js';
 import searchRouter from './api/search.js';
 import { startPriceAlertJob } from './jobs/priceAlertJob.js';
 
-// 환경 변수 로드
-dotenv.config();
+// 환경별 .env 파일 로드 (환경별 파일만 사용, .env는 로드하지 않음)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
+const envPath = path.resolve(__dirname, '..', envFile);
+console.log(`Loading environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`Loading env file: ${envPath}`);
+dotenv.config({ path: envPath });
 
 const app: Express = express();
 const PORT = process.env.PORT || 3001;

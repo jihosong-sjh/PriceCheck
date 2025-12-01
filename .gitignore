@@ -9,13 +9,17 @@ build/
 .next/
 out/
 
-# Environment files
+# Environment files (민감 정보 포함)
 .env
 .env.local
+.env.development
+.env.production
 .env.development.local
 .env.test.local
 .env.production.local
-.env.example
+.env.backup
+# .env.example은 템플릿이므로 git에 포함
+!.env.example
 
 # Google Cloud credentials (절대 커밋 금지!)
 **/google-credentials.json
