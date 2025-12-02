@@ -1,9 +1,11 @@
 import express, { type Express, type Request, type Response } from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { errorHandler } from './middleware/errorHandler.js';
+import { generalLimiter } from './middleware/rateLimiter.js';
 import priceRouter from './api/price.js';
 import uploadRouter from './api/upload.js';
 import authRouter from './api/auth.js';
@@ -27,7 +29,20 @@ dotenv.config({ path: envPath });
 const app: Express = express();
 const PORT = process.env.PORT || 3001;
 
-// 미들웨어 설정
+// 보안 헤더 설정 (helmet)
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'https:'],
+    },
+  },
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
+
+// CORS 설정
 const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000').split(',').map(o => o.trim());
 app.use(cors({
   origin: (origin, callback) => {
@@ -41,8 +56,13 @@ app.use(cors({
   },
   credentials: true,
 }));
+
+// 요청 본문 파싱
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// 전역 Rate Limiting (모든 API 요청에 적용)
+app.use('/api', generalLimiter);
 
 // 헬스체크 엔드포인트
 app.get('/api/health', (_req: Request, res: Response) => {

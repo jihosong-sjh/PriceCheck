@@ -14,11 +14,11 @@
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write src/**/*.ts",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:push": "prisma db push",
-    "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:generate": "dotenv -e .env.development -- prisma generate",
+    "db:migrate": "dotenv -e .env.development -- prisma migrate dev",
+    "db:push": "dotenv -e .env.development -- prisma db push",
+    "db:seed": "dotenv -e .env.development -- tsx prisma/seed.ts",
+    "db:studio": "dotenv -e .env.development -- prisma studio"
   },
   "keywords": [
     "pricecheck",
@@ -38,6 +38,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.3",
@@ -49,6 +50,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
+    "dotenv-cli": "^7.4.4",
     "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/multer": "^1.4.12",

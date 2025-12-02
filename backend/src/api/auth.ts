@@ -2,13 +2,27 @@
  * 인증 API 라우트
  * - POST /api/auth/signup - 회원가입
  * - POST /api/auth/login - 로그인
+ * - POST /api/auth/refresh - 토큰 갱신
+ * - POST /api/auth/logout - 로그아웃
  * - GET /api/auth/me - 현재 사용자 정보
+ * - PUT /api/auth/password - 비밀번호 변경
+ * - DELETE /api/auth/account - 회원 탈퇴
  */
 
 import { Router, type Request, type Response } from 'express';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { requireAuth } from '../middleware/auth.js';
-import { signup, login, getUserById, changePassword, deleteAccount } from '../services/auth.js';
+import { authLimiter, passwordChangeLimiter, refreshTokenLimiter } from '../middleware/rateLimiter.js';
+import {
+  signup,
+  login,
+  getUserById,
+  changePassword,
+  deleteAccount,
+  refreshAccessToken,
+  logout,
+  logoutAll,
+} from '../services/auth.js';
 import {
   signupSchema,
   loginSchema,
@@ -16,15 +30,22 @@ import {
   deleteAccountSchema,
   validateBody,
 } from '../utils/validators.js';
+import { z } from 'zod';
 
 const router = Router();
 
+// 리프레시 토큰 스키마
+const refreshTokenSchema = z.object({
+  refreshToken: z.string().min(1, '리프레시 토큰이 필요합니다.'),
+});
+
 /**
  * POST /api/auth/signup
- * 회원가입
+ * 회원가입 (Rate Limiting 적용)
  */
 router.post(
   '/signup',
+  authLimiter,
   asyncHandler(async (req: Request, res: Response) => {
     // 입력 검증
     const { email, password } = validateBody(signupSchema, req.body);
@@ -41,7 +62,8 @@ router.post(
           email: result.user.email,
           createdAt: result.user.createdAt,
         },
-        token: result.token,
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
       },
     });
   })
@@ -49,10 +71,11 @@ router.post(
 
 /**
  * POST /api/auth/login
- * 로그인
+ * 로그인 (Rate Limiting 적용)
  */
 router.post(
   '/login',
+  authLimiter,
   asyncHandler(async (req: Request, res: Response) => {
     // 입력 검증
     const { email, password } = validateBody(loginSchema, req.body);
@@ -69,8 +92,69 @@ router.post(
           email: result.user.email,
           createdAt: result.user.createdAt,
         },
-        token: result.token,
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
       },
+    });
+  })
+);
+
+/**
+ * POST /api/auth/refresh
+ * 액세스 토큰 갱신 (Rate Limiting 적용)
+ */
+router.post(
+  '/refresh',
+  refreshTokenLimiter,
+  asyncHandler(async (req: Request, res: Response) => {
+    const { refreshToken } = validateBody(refreshTokenSchema, req.body);
+
+    const result = await refreshAccessToken(refreshToken);
+
+    res.json({
+      success: true,
+      message: '토큰이 갱신되었습니다.',
+      data: {
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken, // 새 리프레시 토큰이 발급된 경우에만 포함
+      },
+    });
+  })
+);
+
+/**
+ * POST /api/auth/logout
+ * 로그아웃 (리프레시 토큰 폐기)
+ */
+router.post(
+  '/logout',
+  asyncHandler(async (req: Request, res: Response) => {
+    const { refreshToken } = validateBody(refreshTokenSchema, req.body);
+
+    await logout(refreshToken);
+
+    res.json({
+      success: true,
+      message: '로그아웃되었습니다.',
+    });
+  })
+);
+
+/**
+ * POST /api/auth/logout-all
+ * 모든 기기에서 로그아웃 (인증 필요)
+ */
+router.post(
+  '/logout-all',
+  requireAuth,
+  asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user!.userId;
+
+    await logoutAll(userId);
+
+    res.json({
+      success: true,
+      message: '모든 기기에서 로그아웃되었습니다.',
     });
   })
 );
@@ -112,11 +196,12 @@ router.get(
 
 /**
  * PUT /api/auth/password
- * 비밀번호 변경
+ * 비밀번호 변경 (Rate Limiting 적용)
  */
 router.put(
   '/password',
   requireAuth,
+  passwordChangeLimiter,
   asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user!.userId;
     const { currentPassword, newPassword } = validateBody(changePasswordSchema, req.body);

@@ -15,10 +15,10 @@ export interface CrawlerOptions {
   platforms?: Platform[];        // 크롤링할 플랫폼 (기본: 모든 플랫폼)
 }
 
-// 기본 옵션
+// 기본 옵션 (타임아웃 30초 → 15초로 단축)
 const DEFAULT_OPTIONS: Required<CrawlerOptions> = {
   maxItemsPerPlatform: 20,
-  timeout: 30000,
+  timeout: 15000,
   platforms: ['BUNJANG', 'JOONGONARA', 'HELLOMARKET'],
 };
 
