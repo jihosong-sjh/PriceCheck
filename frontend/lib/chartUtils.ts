@@ -203,6 +203,7 @@ export function getPlatformColor(platform: Platform): string {
     BUNJANG: '#f97316', // orange-500
     JOONGONARA: '#22c55e', // green-500
     HELLOMARKET: '#3b82f6', // blue-500
+    NAVER_SHOPPING: '#03c75a', // naver green
   };
   return colors[platform] || '#6b7280';
 }
@@ -215,6 +216,7 @@ export function getPlatformBgColor(platform: Platform): string {
     BUNJANG: '#fff7ed', // orange-50
     JOONGONARA: '#f0fdf4', // green-50
     HELLOMARKET: '#eff6ff', // blue-50
+    NAVER_SHOPPING: '#e8f8ee', // naver green light
   };
   return colors[platform] || '#f9fafb';
 }

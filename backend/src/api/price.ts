@@ -505,10 +505,21 @@ router.post(
             recommendedPrice,
           });
 
+          // 네이버 쇼핑 데이터를 프론트엔드 형식에 맞게 변환
+          const marketDataSnapshot = naverPriceData.items.map((item) => ({
+            price: item.price,
+            platform: 'NAVER_SHOPPING' as const,
+            condition: undefined,
+            originalUrl: item.link,
+            scrapedAt: new Date().toISOString(),
+          }));
+
           return res.json({
             success: true,
             data: {
               input: {
+                category: 'SMARTPHONE', // 기본 카테고리 (프론트엔드 호환용)
+                categoryName: '기타',
                 productName,
                 condition,
                 conditionName: CONDITION_LABELS[condition],
@@ -522,7 +533,12 @@ router.post(
                 confidence: 'low',
                 sampleCount: naverPriceData.priceStats.sampleCount,
               },
-              marketDataSnapshot: naverPriceData.items,
+              marketDataSnapshot,
+              crawlStats: {
+                totalItems: naverPriceData.items.length,
+                itemsByPlatform: { NAVER_SHOPPING: naverPriceData.items.length },
+                crawlDuration: 0,
+              },
               source: 'naver_shopping',
               notice:
                 '중고 거래 데이터가 부족하여 네이버 쇼핑 신품 가격을 기반으로 추정한 가격입니다. 실제 중고 거래가와 차이가 있을 수 있습니다.',
@@ -564,10 +580,21 @@ router.post(
             recommendedPrice,
           });
 
+          // 네이버 쇼핑 데이터를 프론트엔드 형식에 맞게 변환
+          const marketDataSnapshot = naverPriceData.items.map((item) => ({
+            price: item.price,
+            platform: 'NAVER_SHOPPING' as const,
+            condition: undefined,
+            originalUrl: item.link,
+            scrapedAt: new Date().toISOString(),
+          }));
+
           return res.json({
             success: true,
             data: {
               input: {
+                category,
+                categoryName: CATEGORY_LABELS[category],
                 productName,
                 condition,
                 conditionName: CONDITION_LABELS[condition],
@@ -581,7 +608,12 @@ router.post(
                 confidence: 'low',
                 sampleCount: naverPriceData.priceStats.sampleCount,
               },
-              marketDataSnapshot: naverPriceData.items,
+              marketDataSnapshot,
+              crawlStats: {
+                totalItems: naverPriceData.items.length,
+                itemsByPlatform: { NAVER_SHOPPING: naverPriceData.items.length },
+                crawlDuration: crawlResult.stats.crawlDuration,
+              },
               source: 'naver_shopping',
               notice:
                 '중고 거래 데이터가 부족하여 네이버 쇼핑 신품 가격을 기반으로 추정한 가격입니다. 실제 중고 거래가와 차이가 있을 수 있습니다.',

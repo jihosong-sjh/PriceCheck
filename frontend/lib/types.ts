@@ -47,13 +47,14 @@ export const CONDITIONS: { code: Condition; name: string; description: string }[
 ];
 
 // 플랫폼
-export type Platform = 'BUNJANG' | 'JOONGONARA' | 'HELLOMARKET';
+export type Platform = 'BUNJANG' | 'JOONGONARA' | 'HELLOMARKET' | 'NAVER_SHOPPING';
 
 // 플랫폼 한국어 레이블
 export const PLATFORM_LABELS: Record<Platform, string> = {
   BUNJANG: '번개장터',
   JOONGONARA: '중고나라',
   HELLOMARKET: '헬로마켓',
+  NAVER_SHOPPING: '네이버 쇼핑',
 };
 
 // 판매 상태 (매물의 거래 상태)
