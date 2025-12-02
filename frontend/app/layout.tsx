@@ -1,8 +1,18 @@
 import type { Metadata, Viewport } from 'next';
+import { Noto_Sans_KR } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Providers from '@/components/Providers';
+
+// Noto Sans KR 폰트 설정 (next/font로 최적화된 로딩)
+const notoSansKR = Noto_Sans_KR({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  preload: true,
+  variable: '--font-noto-sans-kr',
+});
 
 export const viewport: Viewport = {
   themeColor: [
@@ -51,8 +61,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko" suppressHydrationWarning>
-      <body className="min-h-screen flex flex-col">
+    <html lang="ko" suppressHydrationWarning className={notoSansKR.variable}>
+      <body className={`min-h-screen flex flex-col ${notoSansKR.className}`}>
         <Providers>
           <Header />
           <main className="flex-1">{children}</main>

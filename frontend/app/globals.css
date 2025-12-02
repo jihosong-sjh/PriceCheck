@@ -2,8 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Pretendard 폰트 로드 */
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+/* 폰트: next/font의 Noto Sans KR 사용 (layout.tsx에서 로드) */
 
 @layer base {
   /* 기본 HTML 설정 */

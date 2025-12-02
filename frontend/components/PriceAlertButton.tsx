@@ -1,9 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useSession } from 'next-auth/react';
 import type { Category, Condition } from '@/lib/types';
-import AlertModal from './AlertModal';
+
+// 모달 컴포넌트 동적 로딩 (필요할 때만 로드)
+const AlertModal = dynamic(() => import('./AlertModal'), {
+  ssr: false,
+});
 
 interface PriceAlertButtonProps {
   category: Category;
