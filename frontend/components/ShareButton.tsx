@@ -116,11 +116,10 @@ export default function ShareButton({
 
   // 링크 복사
   const handleCopyLink = async () => {
-    const { text, url } = getShareData();
-    const copyText = `${text}\n\n${url}`;
+    const { url } = getShareData();
 
     try {
-      await navigator.clipboard.writeText(copyText);
+      await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import PriceForm from '@/components/PriceForm';
 import PriceResult from '@/components/PriceResult';
 import ImageUpload, { type UploadedImage } from '@/components/ImageUpload';
@@ -12,13 +13,16 @@ import type { PriceRecommendRequest, PriceRecommendResponse, Category, Condition
 type ViewState = 'form' | 'result';
 type TabType = 'search' | 'ai';
 
-export default function PriceGuidePage() {
+function PriceGuideContent() {
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [viewState, setViewState] = useState<ViewState>('form');
   const [activeTab, setActiveTab] = useState<TabType>('search');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<PriceRecommendResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [initialSearchDone, setInitialSearchDone] = useState(false);
 
   // 이미지 업로드 상태
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
@@ -41,6 +45,63 @@ export default function PriceGuidePage() {
       setAuthToken(session.accessToken);
     }
   }, [session?.accessToken]);
+
+  // URL 파라미터 업데이트 함수
+  const updateUrlParams = useCallback((productName: string, condition: Condition, modelName?: string) => {
+    const params = new URLSearchParams();
+    params.set('q', productName);
+    params.set('condition', condition);
+    if (modelName) {
+      params.set('model', modelName);
+    }
+    router.replace(`/price-guide?${params.toString()}`, { scroll: false });
+  }, [router]);
+
+  // URL 파라미터로 자동 검색 (페이지 로드 시)
+  useEffect(() => {
+    if (initialSearchDone) return;
+
+    const productName = searchParams.get('q');
+    const condition = searchParams.get('condition') as Condition | null;
+    const modelName = searchParams.get('model');
+
+    if (productName && condition) {
+      setInitialSearchDone(true);
+
+      // 자동 검색 실행
+      const doSearch = async () => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+          const response = await quickPriceRecommend({
+            productName,
+            condition,
+            modelName: modelName || undefined,
+          });
+          setResult(response);
+          setViewState('result');
+        } catch (err) {
+          if (err instanceof ApiException) {
+            if (err.status === 404) {
+              setError('시세 데이터를 찾을 수 없습니다. 제품명을 다시 확인해주세요.');
+            } else if (err.status === 400) {
+              setError(err.data.message || '제품명을 더 구체적으로 입력해주세요.');
+            } else {
+              setError(err.data.message || '가격 조회 중 오류가 발생했습니다.');
+            }
+          } else {
+            setError('서버와 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+          }
+          setViewState('result');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      doSearch();
+    }
+  }, [searchParams, initialSearchDone]);
 
   // 이미지 변경 핸들러
   const handleImageChange = useCallback((images: UploadedImage[]) => {
@@ -104,6 +165,9 @@ export default function PriceGuidePage() {
     setIsLoading(true);
     setError(null);
 
+    // URL 파라미터 업데이트 (검색 결과 공유용)
+    updateUrlParams(data.productName, data.condition, data.modelName);
+
     try {
       const response = await quickPriceRecommend(data);
       setResult(response);
@@ -163,6 +227,8 @@ export default function PriceGuidePage() {
     setRecognitionSuccess(null);
     setRecognitionError(null);
     setUploadedImages([]);
+    // URL 파라미터 초기화
+    router.replace('/price-guide', { scroll: false });
   };
 
   // 이미지 키 배열 생성
@@ -366,5 +432,32 @@ export default function PriceGuidePage() {
         </div>
       )}
     </div>
+  );
+}
+
+// 로딩 폴백 컴포넌트
+function PriceGuideLoading() {
+  return (
+    <div className="container-narrow py-8 md:py-12">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">중고 전자제품 가격 가이드</h1>
+        <p className="text-gray-600 dark:text-gray-300">
+          제품명을 검색하거나 사진을 업로드해 시세를 확인하세요
+        </p>
+      </div>
+      <div className="card">
+        <div className="flex items-center justify-center py-12">
+          <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function PriceGuidePage() {
+  return (
+    <Suspense fallback={<PriceGuideLoading />}>
+      <PriceGuideContent />
+    </Suspense>
   );
 }
