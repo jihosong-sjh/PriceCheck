@@ -549,7 +549,46 @@ router.post(
         totalItems: crawlResult.stats.totalItems,
       });
 
+      // 크롤링 실패 시 네이버 쇼핑 폴백
       if (crawlResult.items.length === 0) {
+        logBusiness('크롤링 데이터 없음, 네이버 쇼핑 폴백 시도', { productName, category });
+
+        const naverPriceData = await naverShoppingService.getPriceData(productName, 20);
+
+        if (naverPriceData && naverPriceData.priceStats.sampleCount > 0) {
+          const usedPriceRatio = condition === 'GOOD' ? 0.7 : condition === 'FAIR' ? 0.6 : 0.5;
+          const recommendedPrice = Math.round(naverPriceData.priceStats.median * usedPriceRatio);
+
+          logBusiness('네이버 쇼핑 폴백 성공', {
+            median: naverPriceData.priceStats.median,
+            recommendedPrice,
+          });
+
+          return res.json({
+            success: true,
+            data: {
+              input: {
+                productName,
+                condition,
+                conditionName: CONDITION_LABELS[condition],
+              },
+              recommendation: {
+                recommendedPrice,
+                priceMin: Math.round(naverPriceData.priceStats.min * usedPriceRatio),
+                priceMax: Math.round(naverPriceData.priceStats.max * usedPriceRatio),
+                averagePrice: Math.round(naverPriceData.priceStats.average * usedPriceRatio),
+                medianPrice: Math.round(naverPriceData.priceStats.median * usedPriceRatio),
+                confidence: 'low',
+                sampleCount: naverPriceData.priceStats.sampleCount,
+              },
+              marketDataSnapshot: naverPriceData.items,
+              source: 'naver_shopping',
+              notice:
+                '중고 거래 데이터가 부족하여 네이버 쇼핑 신품 가격을 기반으로 추정한 가격입니다. 실제 중고 거래가와 차이가 있을 수 있습니다.',
+            },
+          });
+        }
+
         throw new AppError(ErrorCodes.NO_MARKET_DATA);
       }
 
