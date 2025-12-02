@@ -68,12 +68,12 @@ export const authConfig: NextAuthConfig = {
 
           const data = await response.json();
 
-          // 백엔드 응답 형식: { success: true, data: { user, token } }
-          if (data.success && data.data?.token && data.data?.user) {
+          // 백엔드 응답 형식: { success: true, data: { user, accessToken, refreshToken } }
+          if (data.success && data.data?.accessToken && data.data?.user) {
             return {
               id: data.data.user.id,
               email: data.data.user.email,
-              accessToken: data.data.token,
+              accessToken: data.data.accessToken,
             };
           }
 
