@@ -1,16 +1,16 @@
 /**
  * 가격 알림 API 라우트
- * - POST /api/alerts - 알림 생성
- * - GET /api/alerts - 내 알림 목록
- * - GET /api/alerts/:id - 알림 상세
- * - PATCH /api/alerts/:id - 알림 수정
- * - DELETE /api/alerts/:id - 알림 삭제
+ * @swagger
+ * tags:
+ *   name: Alerts
+ *   description: 가격 알림 API
  */
 
 import { Router, type Request, type Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
-import { asyncHandler, AppError } from '../middleware/errorHandler.js';
+import { asyncHandler } from '../middleware/errorHandler.js';
+import { AppError, ErrorCodes } from '../utils/errors.js';
 import { requireAuth } from '../middleware/auth.js';
 import { paginationSchema, CATEGORY_LABELS, CONDITION_LABELS } from '../utils/validators.js';
 
@@ -60,8 +60,61 @@ const alertIdSchema = z.object({
 });
 
 /**
- * POST /api/alerts
- * 알림 생성 (인증 필요)
+ * @swagger
+ * /api/alerts:
+ *   post:
+ *     summary: 가격 알림 생성
+ *     tags: [Alerts]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - category
+ *               - productName
+ *               - condition
+ *               - targetPrice
+ *             properties:
+ *               category:
+ *                 $ref: '#/components/schemas/Category'
+ *               productName:
+ *                 type: string
+ *                 example: 아이폰 15 프로
+ *               modelName:
+ *                 type: string
+ *                 example: 256GB
+ *               condition:
+ *                 $ref: '#/components/schemas/Condition'
+ *               targetPrice:
+ *                 type: integer
+ *                 minimum: 1000
+ *                 maximum: 100000000
+ *                 example: 1000000
+ *     responses:
+ *       201:
+ *         description: 알림 생성 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/PriceAlert'
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       409:
+ *         description: 중복 알림
  */
 router.post(
   '/',
@@ -76,10 +129,9 @@ router.post(
     });
 
     if (activeAlertCount >= MAX_ALERTS_PER_USER) {
-      throw new AppError(
-        `알림은 최대 ${MAX_ALERTS_PER_USER}개까지 등록할 수 있습니다.`,
-        400
-      );
+      throw new AppError(ErrorCodes.QUOTA_EXCEEDED, {
+        message: `알림은 최대 ${MAX_ALERTS_PER_USER}개까지 등록할 수 있습니다.`,
+      });
     }
 
     // 동일한 제품에 대한 알림이 이미 있는지 확인
@@ -95,7 +147,9 @@ router.post(
     });
 
     if (existingAlert) {
-      throw new AppError('이미 동일한 제품에 대한 알림이 등록되어 있습니다.', 409);
+      throw new AppError(ErrorCodes.DUPLICATE_RESOURCE, {
+        message: '이미 동일한 제품에 대한 알림이 등록되어 있습니다.',
+      });
     }
 
     // 알림 생성
@@ -119,8 +173,51 @@ router.post(
 );
 
 /**
- * GET /api/alerts
- * 내 알림 목록 조회 (인증 필요)
+ * @swagger
+ * /api/alerts:
+ *   get:
+ *     summary: 내 알림 목록 조회
+ *     tags: [Alerts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *       - in: query
+ *         name: activeOnly
+ *         schema:
+ *           type: boolean
+ *         description: 활성 알림만 조회
+ *     responses:
+ *       200:
+ *         description: 알림 목록
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/PriceAlert'
+ *                     pagination:
+ *                       $ref: '#/components/schemas/Pagination'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
  */
 router.get(
   '/',
@@ -169,8 +266,26 @@ router.get(
 );
 
 /**
- * GET /api/alerts/:id
- * 알림 상세 조회 (인증 필요)
+ * @swagger
+ * /api/alerts/{id}:
+ *   get:
+ *     summary: 알림 상세 조회
+ *     tags: [Alerts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 알림 상세 정보
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
  */
 router.get(
   '/:id',
@@ -190,7 +305,9 @@ router.get(
     });
 
     if (!alert) {
-      throw new AppError('알림을 찾을 수 없습니다.', 404);
+      throw new AppError(ErrorCodes.RESOURCE_NOT_FOUND, {
+        message: '알림을 찾을 수 없습니다.',
+      });
     }
 
     res.json({
@@ -211,8 +328,36 @@ router.get(
 );
 
 /**
- * PATCH /api/alerts/:id
- * 알림 수정 (인증 필요)
+ * @swagger
+ * /api/alerts/{id}:
+ *   patch:
+ *     summary: 알림 수정
+ *     tags: [Alerts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               targetPrice:
+ *                 type: integer
+ *               isActive:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: 알림 수정 성공
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
  */
 router.patch(
   '/:id',
@@ -228,7 +373,9 @@ router.patch(
     });
 
     if (!existingAlert) {
-      throw new AppError('알림을 찾을 수 없습니다.', 404);
+      throw new AppError(ErrorCodes.RESOURCE_NOT_FOUND, {
+        message: '알림을 찾을 수 없습니다.',
+      });
     }
 
     // 알림 수정
@@ -249,8 +396,26 @@ router.patch(
 );
 
 /**
- * DELETE /api/alerts/:id
- * 알림 삭제 (인증 필요)
+ * @swagger
+ * /api/alerts/{id}:
+ *   delete:
+ *     summary: 알림 삭제
+ *     tags: [Alerts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 알림 삭제 성공
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
  */
 router.delete(
   '/:id',
@@ -265,7 +430,9 @@ router.delete(
     });
 
     if (!alert) {
-      throw new AppError('알림을 찾을 수 없습니다.', 404);
+      throw new AppError(ErrorCodes.RESOURCE_NOT_FOUND, {
+        message: '알림을 찾을 수 없습니다.',
+      });
     }
 
     await prisma.priceAlert.delete({
@@ -295,8 +462,7 @@ function formatAlertResponse(alert: {
   createdAt: Date;
   updatedAt: Date;
 }) {
-  const priceDiff =
-    alert.currentPrice !== null ? alert.currentPrice - alert.targetPrice : null;
+  const priceDiff = alert.currentPrice !== null ? alert.currentPrice - alert.targetPrice : null;
   const priceReached = alert.currentPrice !== null && alert.currentPrice <= alert.targetPrice;
 
   return {
