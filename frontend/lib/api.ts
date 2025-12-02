@@ -777,7 +777,7 @@ export async function quickPriceRecommend(
       id: `${index}`,
       productName: input.productName,
       modelName: input.modelName,
-      platform: item.platform as 'BUNJANG' | 'JOONGONARA' | 'HELLOMARKET',
+      platform: item.platform as 'BUNJANG' | 'JOONGONARA' | 'HELLOMARKET' | 'NAVER_SHOPPING',
       price: item.price,
       condition: item.condition,
       originalUrl: item.originalUrl,

@@ -150,6 +150,7 @@ export async function crawlJoongonara(
 
 /**
  * 중고나라 API를 통한 검색 (대체 방법)
+ * 참고: 비공식 API로 불안정할 수 있음
  */
 export async function crawlJoongonaraApi(
   productName: string,
@@ -207,8 +208,8 @@ export async function crawlJoongonaraApi(
     }
 
     return results;
-  } catch (error) {
-    console.error('중고나라 API 크롤링 오류:', error);
+  } catch {
+    // API 실패는 예상된 동작 (비공식 API) - 로그 생략
     return results;
   }
 }

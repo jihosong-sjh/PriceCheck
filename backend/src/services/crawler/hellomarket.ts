@@ -192,6 +192,7 @@ export async function crawlHellomarket(
 
 /**
  * 헬로마켓 API를 통한 검색 (대체 방법)
+ * 참고: 비공식 API로 불안정할 수 있음
  */
 export async function crawlHellomarketApi(
   productName: string,
@@ -251,9 +252,8 @@ export async function crawlHellomarketApi(
     }
 
     return results;
-  } catch (error) {
-    // API가 없거나 실패해도 조용히 처리
-    console.error('헬로마켓 API 크롤링 오류:', error);
+  } catch {
+    // API 실패는 예상된 동작 (비공식 API) - 로그 생략
     return results;
   }
 }
