@@ -52,13 +52,20 @@ const cache = new Map<string, CacheEntry>();
 const CACHE_TTL = 5 * 60 * 1000; // 5분
 
 class NaverShoppingService {
-  private clientId: string;
-  private clientSecret: string;
   private baseUrl = 'https://openapi.naver.com/v1/search/shop.json';
 
-  constructor() {
-    this.clientId = process.env.NAVER_CLIENT_ID || '';
-    this.clientSecret = process.env.NAVER_CLIENT_SECRET || '';
+  /**
+   * 환경변수에서 Client ID 가져오기 (지연 로딩)
+   */
+  private get clientId(): string {
+    return process.env.NAVER_CLIENT_ID || '';
+  }
+
+  /**
+   * 환경변수에서 Client Secret 가져오기 (지연 로딩)
+   */
+  private get clientSecret(): string {
+    return process.env.NAVER_CLIENT_SECRET || '';
   }
 
   /**

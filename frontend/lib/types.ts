@@ -326,7 +326,13 @@ export interface AutocompleteSuggestion {
   searchCount?: number;
 }
 
-// 자동완성 응답
+// 분리된 자동완성 응답 (검색 기록과 네이버 추천 별도)
+export interface SeparatedSuggestions {
+  history: AutocompleteSuggestion[];
+  naver: AutocompleteSuggestion[];
+}
+
+// 자동완성 응답 (deprecated - 기존 호환용)
 export interface AutocompleteResponse {
   suggestions: AutocompleteSuggestion[];
 }

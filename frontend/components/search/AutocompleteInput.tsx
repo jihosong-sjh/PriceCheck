@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { getAutocomplete } from '@/lib/api';
-import type { AutocompleteSuggestion } from '@/lib/types';
+import type { AutocompleteSuggestion, SeparatedSuggestions } from '@/lib/types';
 
 interface AutocompleteInputProps {
   value: string;
@@ -21,7 +21,7 @@ export default function AutocompleteInput({
   className = '',
   disabled = false,
 }: AutocompleteInputProps) {
-  const [suggestions, setSuggestions] = useState<AutocompleteSuggestion[]>([]);
+  const [suggestions, setSuggestions] = useState<SeparatedSuggestions>({ history: [], naver: [] });
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -29,10 +29,18 @@ export default function AutocompleteInput({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
+  // 전체 제안 항목 (키보드 네비게이션용)
+  const allSuggestions = useMemo(() => {
+    return [...suggestions.history, ...suggestions.naver];
+  }, [suggestions]);
+
+  // 드롭다운 표시 여부
+  const hasAnySuggestions = suggestions.history.length > 0 || suggestions.naver.length > 0;
+
   // 디바운스된 자동완성 조회
   const fetchSuggestions = useCallback(async (query: string) => {
     if (query.length < 2) {
-      setSuggestions([]);
+      setSuggestions({ history: [], naver: [] });
       setIsOpen(false);
       return;
     }
@@ -41,11 +49,12 @@ export default function AutocompleteInput({
     try {
       const results = await getAutocomplete(query);
       setSuggestions(results);
-      setIsOpen(results.length > 0);
+      const hasSuggestions = results.history.length > 0 || results.naver.length > 0;
+      setIsOpen(hasSuggestions);
       setSelectedIndex(-1);
     } catch (error) {
       console.error('자동완성 조회 실패:', error);
-      setSuggestions([]);
+      setSuggestions({ history: [], naver: [] });
     } finally {
       setIsLoading(false);
     }
@@ -73,13 +82,13 @@ export default function AutocompleteInput({
   // 키보드 네비게이션
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (!isOpen || suggestions.length === 0) return;
+      if (!isOpen || allSuggestions.length === 0) return;
 
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
           setSelectedIndex((prev) =>
-            prev < suggestions.length - 1 ? prev + 1 : prev
+            prev < allSuggestions.length - 1 ? prev + 1 : prev
           );
           break;
         case 'ArrowUp':
@@ -88,8 +97,8 @@ export default function AutocompleteInput({
           break;
         case 'Enter':
           e.preventDefault();
-          if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
-            const selected = suggestions[selectedIndex];
+          if (selectedIndex >= 0 && selectedIndex < allSuggestions.length) {
+            const selected = allSuggestions[selectedIndex];
             onChange(selected.text);
             onSelect(selected);
             setIsOpen(false);
@@ -102,7 +111,7 @@ export default function AutocompleteInput({
           break;
       }
     },
-    [isOpen, suggestions, selectedIndex, onChange, onSelect]
+    [isOpen, allSuggestions, selectedIndex, onChange, onSelect]
   );
 
   // 제안 항목 클릭
@@ -134,6 +143,14 @@ export default function AutocompleteInput({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // 인덱스로 선택 여부 확인 (섹션 분리된 경우)
+  const getGlobalIndex = (section: 'history' | 'naver', localIndex: number): number => {
+    if (section === 'history') {
+      return localIndex;
+    }
+    return suggestions.history.length + localIndex;
+  };
+
   // 컴포넌트 언마운트 시 타이머 정리
   useEffect(() => {
     return () => {
@@ -153,7 +170,7 @@ export default function AutocompleteInput({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => {
-            if (suggestions.length > 0) setIsOpen(true);
+            if (hasAnySuggestions) setIsOpen(true);
           }}
           placeholder={placeholder}
           disabled={disabled}
@@ -192,48 +209,88 @@ export default function AutocompleteInput({
       </div>
 
       {/* 드롭다운 */}
-      {isOpen && suggestions.length > 0 && (
+      {isOpen && hasAnySuggestions && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+          className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-72 overflow-y-auto"
         >
-          {suggestions.map((suggestion, index) => (
-            <button
-              key={`${suggestion.text}-${index}`}
-              type="button"
-              onClick={() => handleSuggestionClick(suggestion)}
-              className={`w-full px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between
-                ${index === selectedIndex ? 'bg-blue-50 dark:bg-blue-900/30' : ''}
-                ${index !== suggestions.length - 1 ? 'border-b border-gray-100 dark:border-gray-700' : ''}`}
-            >
-              <div className="flex flex-col">
-                <span className="text-gray-900 dark:text-white font-medium">
-                  {suggestion.text}
+          {/* 검색 기록 섹션 */}
+          {suggestions.history.length > 0 && (
+            <div>
+              <div className="px-4 py-2 bg-gray-50 dark:bg-gray-750 border-b border-gray-200 dark:border-gray-700">
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  최근 검색
                 </span>
-                {suggestion.categoryName && (
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {suggestion.categoryName}
-                  </span>
-                )}
               </div>
-              <div className="flex items-center gap-2">
-                {suggestion.searchCount && suggestion.searchCount > 0 && (
-                  <span className="text-xs text-gray-400 dark:text-gray-500">
-                    검색 {suggestion.searchCount}회
-                  </span>
-                )}
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full ${
-                    suggestion.source === 'history'
-                      ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                  }`}
+              {suggestions.history.map((suggestion, index) => (
+                <button
+                  key={`history-${suggestion.text}-${index}`}
+                  type="button"
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  className={`w-full px-4 py-2.5 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between
+                    ${getGlobalIndex('history', index) === selectedIndex ? 'bg-blue-50 dark:bg-blue-900/30' : ''}
+                    ${index !== suggestions.history.length - 1 ? 'border-b border-gray-100 dark:border-gray-700' : ''}`}
                 >
-                  {suggestion.source === 'history' ? '검색기록' : '추천'}
+                  <div className="flex flex-col">
+                    <span className="text-gray-900 dark:text-white font-medium">
+                      {suggestion.text}
+                    </span>
+                    {suggestion.categoryName && (
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {suggestion.categoryName}
+                      </span>
+                    )}
+                  </div>
+                  {suggestion.searchCount && suggestion.searchCount > 0 && (
+                    <span className="text-xs text-gray-400 dark:text-gray-500">
+                      {suggestion.searchCount}회
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* 네이버 추천 섹션 */}
+          {suggestions.naver.length > 0 && (
+            <div>
+              <div className={`px-4 py-2 bg-gray-50 dark:bg-gray-750 border-b border-gray-200 dark:border-gray-700 ${suggestions.history.length > 0 ? 'border-t' : ''}`}>
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  추천 검색어
                 </span>
               </div>
-            </button>
-          ))}
+              {suggestions.naver.map((suggestion, index) => (
+                <button
+                  key={`naver-${suggestion.text}-${index}`}
+                  type="button"
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  className={`w-full px-4 py-2.5 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between
+                    ${getGlobalIndex('naver', index) === selectedIndex ? 'bg-blue-50 dark:bg-blue-900/30' : ''}
+                    ${index !== suggestions.naver.length - 1 ? 'border-b border-gray-100 dark:border-gray-700' : ''}`}
+                >
+                  <div className="flex flex-col">
+                    <span className="text-gray-900 dark:text-white font-medium">
+                      {suggestion.text}
+                    </span>
+                    {suggestion.categoryName && (
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {suggestion.categoryName}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400">
+                    네이버
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

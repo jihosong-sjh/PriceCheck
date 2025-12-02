@@ -18,6 +18,12 @@ export interface AutocompleteSuggestion {
   searchCount?: number;
 }
 
+// 분리된 자동완성 응답 타입
+export interface SeparatedSuggestions {
+  history: AutocompleteSuggestion[];
+  naver: AutocompleteSuggestion[];
+}
+
 class AutocompleteService {
   /**
    * 내부 DB에서 과거 검색 기록 조회
@@ -76,7 +82,7 @@ class AutocompleteService {
   }
 
   /**
-   * 자동완성 제안 통합 조회
+   * 자동완성 제안 통합 조회 (기존 방식 - 병합)
    * 내부 DB 결과를 우선으로 하고, 부족한 경우 네이버 API로 보완
    */
   async getSuggestions(query: string, maxResults: number = 8): Promise<AutocompleteSuggestion[]> {
@@ -101,6 +107,36 @@ class AutocompleteService {
 
     // 최대 개수만큼 반환
     return merged.slice(0, maxResults);
+  }
+
+  /**
+   * 자동완성 제안 분리 조회 (새로운 방식)
+   * 검색 기록과 네이버 추천을 별도 섹션으로 반환
+   */
+  async getSeparatedSuggestions(query: string): Promise<SeparatedSuggestions> {
+    // 최소 2글자 이상 입력 필요
+    if (!query || query.trim().length < 2) {
+      return { history: [], naver: [] };
+    }
+
+    const trimmedQuery = query.trim();
+
+    // 검색 기록과 네이버 API를 병렬로 호출
+    const [historyResults, naverResults] = await Promise.all([
+      this.searchFromHistory(trimmedQuery, 5),
+      this.searchFromNaver(trimmedQuery, 5),
+    ]);
+
+    // 네이버 결과에서 검색 기록과 중복되는 항목 제거
+    const historyTexts = new Set(historyResults.map(item => item.text.toLowerCase()));
+    const filteredNaverResults = naverResults.filter(
+      item => !historyTexts.has(item.text.toLowerCase())
+    );
+
+    return {
+      history: historyResults,
+      naver: filteredNaverResults,
+    };
   }
 
   /**

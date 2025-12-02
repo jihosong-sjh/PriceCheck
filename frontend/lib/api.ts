@@ -22,6 +22,7 @@ import type {
   NotificationItem,
   NotificationListResponse,
   AutocompleteSuggestion,
+  SeparatedSuggestions,
   PopularSearchItem,
   QuickRecommendRequest,
   QuickRecommendResponse,
@@ -670,11 +671,12 @@ export async function deleteNotification(id: string): Promise<{ message: string 
 
 // ========== 자동완성 API ==========
 
-// 백엔드 자동완성 응답 타입 (내부 사용)
+// 백엔드 자동완성 응답 타입 (내부 사용) - 분리된 형태
 interface BackendAutocompleteResponse {
   success: boolean;
   data: {
-    suggestions: AutocompleteSuggestion[];
+    history: AutocompleteSuggestion[];
+    naver: AutocompleteSuggestion[];
   };
 }
 
@@ -727,12 +729,15 @@ interface BackendQuickRecommendResponse {
   };
 }
 
-// 자동완성 조회
-export async function getAutocomplete(query: string): Promise<AutocompleteSuggestion[]> {
+// 자동완성 조회 (분리된 형태로 반환)
+export async function getAutocomplete(query: string): Promise<SeparatedSuggestions> {
   const response = await request<BackendAutocompleteResponse>('/search/autocomplete', {
     params: { q: query },
   });
-  return response.data.suggestions;
+  return {
+    history: response.data.history,
+    naver: response.data.naver,
+  };
 }
 
 // 인기 검색어 조회

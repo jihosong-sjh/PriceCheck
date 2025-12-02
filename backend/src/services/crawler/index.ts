@@ -1,12 +1,14 @@
 /**
  * 크롤러 통합 관리자
  * 번개장터, 중고나라, 헬로마켓 크롤러를 통합 관리하고 병렬 실행
+ * 검색 결과가 없을 경우 검색어를 단계적으로 정제하여 재시도
  */
 
 import bunjangCrawler, { type CrawlResult } from './bunjang.js';
 import joongonaraCrawler from './joongonara.js';
 import hellomarketCrawler from './hellomarket.js';
 import type { Platform, Category } from '../../utils/validators.js';
+import searchQueryRefiner from '../searchQueryRefiner.js';
 
 // 크롤러 옵션
 export interface CrawlerOptions {
@@ -30,6 +32,8 @@ export interface CrawlerResult {
     itemsByPlatform: Record<Platform, number>;
     crawlDuration: number;  // ms
     errors: string[];
+    usedQuery?: string;           // 실제 사용된 검색어
+    queryRefinementAttempts?: number;  // 검색어 정제 시도 횟수
   };
 }
 
@@ -77,46 +81,37 @@ function enhanceSearchQuery(
 }
 
 /**
- * 모든 플랫폼에서 병렬로 크롤링
+ * 단일 검색어로 모든 플랫폼 크롤링 (내부 함수)
  */
-export async function crawlAllPlatforms(
-  productName: string,
-  modelName?: string,
-  category?: Category,
-  options?: CrawlerOptions
-): Promise<CrawlerResult> {
-  const opts = { ...DEFAULT_OPTIONS, ...options };
-  const startTime = Date.now();
+async function crawlWithQuery(
+  searchQuery: string,
+  modelName: string | undefined,
+  platforms: Platform[],
+  opts: Required<CrawlerOptions>
+): Promise<{ items: CrawlResult[]; errors: string[] }> {
   const errors: string[] = [];
-
-  // 검색 쿼리 보강
-  const { productName: enhancedName, modelName: enhancedModel } = enhanceSearchQuery(
-    productName,
-    modelName,
-    category
-  );
 
   // 플랫폼별 크롤링 함수 매핑
   const crawlerMap: Record<Platform, () => Promise<CrawlResult[]>> = {
     BUNJANG: () =>
-      bunjangCrawler.crawl(enhancedName, enhancedModel, {
+      bunjangCrawler.crawl(searchQuery, modelName, {
         maxItems: opts.maxItemsPerPlatform,
         timeout: opts.timeout,
       }),
     JOONGONARA: () =>
-      joongonaraCrawler.crawl(enhancedName, enhancedModel, {
+      joongonaraCrawler.crawl(searchQuery, modelName, {
         maxItems: opts.maxItemsPerPlatform,
         timeout: opts.timeout,
       }),
     HELLOMARKET: () =>
-      hellomarketCrawler.crawl(enhancedName, enhancedModel, {
+      hellomarketCrawler.crawl(searchQuery, modelName, {
         maxItems: opts.maxItemsPerPlatform,
         timeout: opts.timeout,
       }),
   };
 
   // 선택된 플랫폼만 크롤링
-  const crawlPromises = opts.platforms.map(async (platform) => {
+  const crawlPromises = platforms.map(async (platform) => {
     try {
       const crawler = crawlerMap[platform];
       if (!crawler) {
@@ -132,9 +127,64 @@ export async function crawlAllPlatforms(
 
   // 병렬 실행
   const results = await Promise.all(crawlPromises);
+  return { items: results.flat(), errors };
+}
 
-  // 결과 병합
-  const allItems = results.flat();
+/**
+ * 모든 플랫폼에서 병렬로 크롤링
+ * 검색 결과가 부족하면 검색어를 단계적으로 정제하여 재시도
+ */
+export async function crawlAllPlatforms(
+  productName: string,
+  modelName?: string,
+  category?: Category,
+  options?: CrawlerOptions
+): Promise<CrawlerResult> {
+  const opts = { ...DEFAULT_OPTIONS, ...options };
+  const startTime = Date.now();
+  let allErrors: string[] = [];
+
+  // 검색어 후보 생성 (정제된 버전들)
+  const searchQueries = searchQueryRefiner.getCandidates(productName, category);
+
+  // 원본 검색어도 후보에 추가 (맨 앞에)
+  const originalQuery = enhanceSearchQuery(productName, modelName, category).productName;
+  const queriesToTry = [originalQuery, ...searchQueries.filter(q => q !== originalQuery)];
+
+  console.log(`[Crawler] 검색어 후보: ${queriesToTry.join(' → ')}`);
+
+  let allItems: CrawlResult[] = [];
+  let usedQuery = originalQuery;
+  let attemptCount = 0;
+
+  // 최소 결과 수 (이 이상이면 재시도하지 않음)
+  const MIN_RESULTS = 3;
+
+  // 단계적으로 검색어 시도
+  for (const query of queriesToTry) {
+    attemptCount++;
+    console.log(`[Crawler] ${attemptCount}차 시도: "${query}"`);
+
+    const { items, errors } = await crawlWithQuery(query, modelName, opts.platforms, opts);
+    allErrors = [...allErrors, ...errors];
+
+    if (items.length > 0) {
+      // 기존 결과와 병합 (중복 제거)
+      const existingUrls = new Set(allItems.map(item => item.originalUrl));
+      const newItems = items.filter(item => !existingUrls.has(item.originalUrl));
+      allItems = [...allItems, ...newItems];
+      usedQuery = query;
+
+      console.log(`[Crawler] "${query}" 검색 결과: ${items.length}개 (누적: ${allItems.length}개)`);
+
+      // 충분한 결과가 있으면 중단
+      if (allItems.length >= MIN_RESULTS) {
+        break;
+      }
+    } else {
+      console.log(`[Crawler] "${query}" 검색 결과: 0개`);
+    }
+  }
 
   // 플랫폼별 통계
   const itemsByPlatform: Record<Platform, number> = {
@@ -155,7 +205,9 @@ export async function crawlAllPlatforms(
       totalItems: allItems.length,
       itemsByPlatform,
       crawlDuration,
-      errors,
+      errors: allErrors,
+      usedQuery,
+      queryRefinementAttempts: attemptCount,
     },
   };
 }
