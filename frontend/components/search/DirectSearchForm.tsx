@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import AutocompleteInput from './AutocompleteInput';
 import type { Condition, AutocompleteSuggestion } from '@/lib/types';
 import { CONDITIONS } from '@/lib/types';
+import { useUIStore, useRecentSearches } from '@/lib/stores/uiStore';
 
 interface DirectSearchFormProps {
   onSubmit: (data: { productName: string; condition: Condition; modelName?: string }) => void;
@@ -16,6 +17,11 @@ export default function DirectSearchForm({ onSubmit, isLoading = false }: Direct
   const [modelName, setModelName] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // 최근 검색 기록
+  const recentSearches = useRecentSearches();
+  const addRecentSearch = useUIStore((state) => state.addRecentSearch);
+  const clearRecentSearches = useUIStore((state) => state.clearRecentSearches);
 
   // 자동완성 선택 처리
   const handleSuggestionSelect = useCallback((suggestion: AutocompleteSuggestion) => {
@@ -39,6 +45,10 @@ export default function DirectSearchForm({ onSubmit, isLoading = false }: Direct
     }
 
     setError(null);
+
+    // 최근 검색 기록에 추가
+    addRecentSearch(productName.trim());
+
     onSubmit({
       productName: productName.trim(),
       condition,
@@ -46,8 +56,48 @@ export default function DirectSearchForm({ onSubmit, isLoading = false }: Direct
     });
   };
 
+  // 최근 검색 기록 선택
+  const handleRecentSearchClick = (query: string) => {
+    setProductName(query);
+    setError(null);
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* 최근 검색 기록 */}
+      {recentSearches.length > 0 && !productName && (
+        <div className="mb-2">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-gray-500 dark:text-gray-400">최근 검색</span>
+            <button
+              type="button"
+              onClick={clearRecentSearches}
+              className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              전체 삭제
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {recentSearches.map((query, index) => (
+              <button
+                key={`${query}-${index}`}
+                type="button"
+                onClick={() => handleRecentSearchClick(query)}
+                disabled={isLoading}
+                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700
+                  text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600
+                  transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {query}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 제품명 입력 (자동완성) */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

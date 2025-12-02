@@ -26,17 +26,21 @@ const popularQuerySchema = z.object({
   }),
 });
 
-// 자동완성 응답 타입
+// 자동완성 제안 항목 타입
+interface FormattedSuggestion {
+  text: string;
+  source: 'history' | 'external';
+  category?: string;
+  categoryName?: string;
+  searchCount?: number;
+}
+
+// 자동완성 응답 타입 (분리된 형태)
 interface AutocompleteResponse {
   success: true;
   data: {
-    suggestions: Array<{
-      text: string;
-      source: 'history' | 'external';
-      category?: string;
-      categoryName?: string;
-      searchCount?: number;
-    }>;
+    history: FormattedSuggestion[];
+    naver: FormattedSuggestion[];
   };
 }
 
@@ -65,7 +69,7 @@ interface ErrorResponse {
 
 /**
  * GET /api/search/autocomplete
- * 자동완성 제안 조회
+ * 자동완성 제안 조회 (검색 기록과 네이버 추천을 분리하여 반환)
  */
 router.get(
   '/autocomplete',
@@ -78,22 +82,23 @@ router.get(
       // 요청 검증
       const { q } = autocompleteQuerySchema.parse(req.query);
 
-      // 자동완성 제안 조회
-      const suggestions = await autocompleteService.getSuggestions(q, 8);
+      // 자동완성 제안 분리 조회
+      const { history, naver } = await autocompleteService.getSeparatedSuggestions(q);
 
-      // 응답 변환 (카테고리 이름 추가)
-      const formattedSuggestions = suggestions.map((item: AutocompleteSuggestion) => ({
+      // 응답 변환 함수 (카테고리 이름 추가)
+      const formatSuggestion = (item: AutocompleteSuggestion): FormattedSuggestion => ({
         text: item.text,
         source: item.source,
         category: item.category,
         categoryName: item.category ? CATEGORY_LABELS[item.category] : undefined,
         searchCount: item.searchCount,
-      }));
+      });
 
       return res.json({
         success: true,
         data: {
-          suggestions: formattedSuggestions,
+          history: history.map(formatSuggestion),
+          naver: naver.map(formatSuggestion),
         },
       });
     } catch (error) {

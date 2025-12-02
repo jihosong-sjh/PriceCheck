@@ -56,6 +56,67 @@ export const PLATFORM_LABELS: Record<Platform, string> = {
   HELLOMARKET: '헬로마켓',
 };
 
+// 판매 상태 (매물의 거래 상태)
+export type SaleStatus = 'SELLING' | 'RESERVED' | 'SOLD' | 'HIDDEN';
+
+// 판매 상태 한국어 레이블
+export const SALE_STATUS_LABELS: Record<SaleStatus, string> = {
+  SELLING: '판매중',
+  RESERVED: '예약중',
+  SOLD: '판매완료',
+  HIDDEN: '숨김',
+};
+
+// 플랫폼별 판매 상태 코드 매핑
+const BUNJANG_STATUS_MAP: Record<string, SaleStatus> = {
+  '0': 'SELLING',
+  '1': 'RESERVED',
+  '2': 'SOLD',
+  '3': 'HIDDEN',
+};
+
+const JOONGONARA_STATUS_MAP: Record<string, SaleStatus> = {
+  '0': 'SELLING',
+  '1': 'RESERVED',
+  '2': 'SOLD',
+  'SELLING': 'SELLING',
+  'RESERVED': 'RESERVED',
+  'SOLD': 'SOLD',
+};
+
+const HELLOMARKET_STATUS_MAP: Record<string, SaleStatus> = {
+  '0': 'SELLING',
+  '1': 'RESERVED',
+  '2': 'SOLD',
+  'sale': 'SELLING',
+  'reserved': 'RESERVED',
+  'sold': 'SOLD',
+};
+
+/**
+ * 플랫폼별 판매 상태를 한국어 레이블로 변환
+ */
+export function getSaleStatusLabel(platform: Platform, statusCode?: string): string | null {
+  if (!statusCode) return null;
+
+  const code = statusCode.toString().trim();
+  let saleStatus: SaleStatus | undefined;
+
+  switch (platform) {
+    case 'BUNJANG':
+      saleStatus = BUNJANG_STATUS_MAP[code];
+      break;
+    case 'JOONGONARA':
+      saleStatus = JOONGONARA_STATUS_MAP[code];
+      break;
+    case 'HELLOMARKET':
+      saleStatus = HELLOMARKET_STATUS_MAP[code];
+      break;
+  }
+
+  return saleStatus ? SALE_STATUS_LABELS[saleStatus] : statusCode;
+}
+
 // ========== API 요청/응답 타입 ==========
 
 // 가격 추천 요청
@@ -326,7 +387,13 @@ export interface AutocompleteSuggestion {
   searchCount?: number;
 }
 
-// 자동완성 응답
+// 분리된 자동완성 응답 (검색 기록과 네이버 추천 별도)
+export interface SeparatedSuggestions {
+  history: AutocompleteSuggestion[];
+  naver: AutocompleteSuggestion[];
+}
+
+// 자동완성 응답 (deprecated - 기존 호환용)
 export interface AutocompleteResponse {
   suggestions: AutocompleteSuggestion[];
 }
@@ -356,6 +423,37 @@ export interface QuickRecommendResponse extends PriceRecommendResponse {
   categoryDetection?: {
     confidence: 'high' | 'medium' | 'low';
     score: number;
+  };
+}
+
+// ========== 가격 히스토리 타입 ==========
+
+// 가격 히스토리 데이터 포인트
+export interface PriceHistoryDataPoint {
+  date: string;
+  avgPrice: number;
+  minPrice: number;
+  maxPrice: number;
+  count: number;
+  platforms: Record<string, { avgPrice: number; count: number }>;
+}
+
+// 가격 히스토리 응답
+export interface PriceHistoryResponse {
+  productName: string;
+  period: {
+    startDate: string;
+    endDate: string;
+    days: number;
+  };
+  history: PriceHistoryDataPoint[];
+  summary: {
+    totalDataPoints: number;
+    overallAvgPrice: number;
+    overallMinPrice: number;
+    overallMaxPrice: number;
+    priceChange: number;
+    priceChangePercent: number;
   };
 }
 

@@ -1,11 +1,13 @@
 /**
  * 번개장터 크롤러
  * Playwright + Cheerio를 사용한 동적 페이지 크롤링
+ * 브라우저 풀을 활용하여 성능 최적화
  */
 
-import { chromium, type Browser, type Page } from 'playwright';
+import { type BrowserContext } from 'playwright';
 import * as cheerio from 'cheerio';
 import type { Platform } from '../../utils/validators.js';
+import { acquirePage, releasePage } from './browserPool.js';
 
 // 크롤링 결과 인터페이스
 export interface CrawlResult {
@@ -22,14 +24,14 @@ export interface CrawlResult {
 // 번개장터 크롤러 옵션
 export interface BunjangCrawlerOptions {
   maxItems?: number;       // 최대 수집 항목 수 (기본: 20)
-  timeout?: number;        // 타임아웃 (ms, 기본: 30000)
-  headless?: boolean;      // 헤드리스 모드 (기본: true)
+  timeout?: number;        // 타임아웃 (ms, 기본: 15000)
+  headless?: boolean;      // 헤드리스 모드 (기본: true) - 브라우저 풀에서 관리
 }
 
-// 기본 옵션
+// 기본 옵션 (타임아웃 30초 → 15초로 단축)
 const DEFAULT_OPTIONS: Required<BunjangCrawlerOptions> = {
   maxItems: 20,
-  timeout: 30000,
+  timeout: 15000,
   headless: true,
 };
 
@@ -43,31 +45,56 @@ function buildSearchUrl(productName: string, modelName?: string): string {
 }
 
 /**
- * 가격 문자열을 숫자로 변환
- * 예: "150,000원" -> 150000, "15만원" -> 150000
+ * 가격 문자열을 숫자로 변환 (개선된 파싱)
+ * 지원 형식:
+ * - "150,000원", "150000원", "150,000" -> 150000
+ * - "15만원", "15만 원", "15.5만원" -> 150000, 155000
+ * - "1234", "12345" -> 1234, 12345
+ * - "무료나눔", "가격제안" -> null
  */
 function parsePrice(priceText: string): number | null {
-  // "만원" 처리 (예: "41만원", "41.5만원", "41만 원")
-  const manwonMatch = priceText.match(/(\d+(?:\.\d+)?)\s*만\s*원?/);
+  if (!priceText) return null;
+
+  // 공백 정리
+  const cleaned = priceText.replace(/\s+/g, ' ').trim();
+
+  // 무료나눔, 가격제안 등 제외
+  if (/무료|나눔|제안|협의|문의/i.test(cleaned)) {
+    return null;
+  }
+
+  // "만원" 처리 (예: "41만원", "41.5만원", "41만 원", "41만5천원")
+  const manwonMatch = cleaned.match(/(\d+(?:\.\d+)?)\s*만\s*(\d+)?(?:천)?\s*원?/);
   if (manwonMatch) {
-    const price = Math.round(parseFloat(manwonMatch[1]) * 10000);
+    let price = Math.round(parseFloat(manwonMatch[1]) * 10000);
+    // "41만5천원" 형태 처리
+    if (manwonMatch[2]) {
+      price += parseInt(manwonMatch[2], 10) * 1000;
+    }
     // 합리적인 가격 범위 검증 (1천원 ~ 1억원)
     return price >= 1000 && price <= 100000000 ? price : null;
   }
 
   // 일반 가격 처리 (예: "150,000원", "150000원")
-  const priceMatch = priceText.match(/(\d{1,3}(?:,\d{3})*|\d+)\s*원/);
+  const priceMatch = cleaned.match(/(\d{1,3}(?:,\d{3})*|\d+)\s*원/);
   if (priceMatch) {
-    const cleaned = priceMatch[1].replace(/,/g, '');
-    const price = parseInt(cleaned, 10);
+    const numStr = priceMatch[1].replace(/,/g, '');
+    const price = parseInt(numStr, 10);
     return price >= 1000 && price <= 100000000 ? price : null;
   }
 
-  // 숫자만 있는 경우 (원 단위 없이)
-  const numMatch = priceText.match(/(\d{1,3}(?:,\d{3})+)/);
-  if (numMatch) {
-    const cleaned = numMatch[1].replace(/,/g, '');
-    const price = parseInt(cleaned, 10);
+  // 콤마가 있는 숫자 (예: "150,000")
+  const commaNumMatch = cleaned.match(/(\d{1,3}(?:,\d{3})+)/);
+  if (commaNumMatch) {
+    const numStr = commaNumMatch[1].replace(/,/g, '');
+    const price = parseInt(numStr, 10);
+    return price >= 1000 && price <= 100000000 ? price : null;
+  }
+
+  // 순수 숫자만 있는 경우 (예: "150000", "15000")
+  const pureNumMatch = cleaned.match(/^(\d{4,8})$/);
+  if (pureNumMatch) {
+    const price = parseInt(pureNumMatch[1], 10);
     return price >= 1000 && price <= 100000000 ? price : null;
   }
 
@@ -76,6 +103,7 @@ function parsePrice(priceText: string): number | null {
 
 /**
  * 번개장터에서 상품 목록 크롤링
+ * 브라우저 풀을 사용하여 성능 최적화
  */
 export async function crawlBunjang(
   productName: string,
@@ -84,38 +112,33 @@ export async function crawlBunjang(
 ): Promise<CrawlResult[]> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   const results: CrawlResult[] = [];
-  let browser: Browser | null = null;
+  let context: BrowserContext | null = null;
 
   try {
-    // 브라우저 실행
-    browser = await chromium.launch({
-      headless: opts.headless,
-    });
-
-    const context = await browser.newContext({
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    // 브라우저 풀에서 페이지 획득
+    const acquired = await acquirePage({
+      timeout: opts.timeout,
       viewport: { width: 375, height: 667 },
       locale: 'ko-KR',
     });
-
-    const page: Page = await context.newPage();
-    page.setDefaultTimeout(opts.timeout);
+    context = acquired.context;
+    const page = acquired.page;
 
     // 검색 페이지로 이동
     const searchUrl = buildSearchUrl(productName, modelName);
-    await page.goto(searchUrl, { waitUntil: 'networkidle' });
+    await page.goto(searchUrl, { waitUntil: 'networkidle', timeout: opts.timeout });
 
-    // 동적 콘텐츠 로딩 대기
-    await page.waitForTimeout(2000);
+    // 동적 콘텐츠 로딩 대기 (1.5초로 단축)
+    await page.waitForTimeout(1500);
 
-    // 스크롤하여 더 많은 상품 로드
-    for (let i = 0; i < 3; i++) {
+    // 스크롤하여 더 많은 상품 로드 (2번으로 단축)
+    for (let i = 0; i < 2; i++) {
       await page.evaluate(() => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const win = globalThis as any;
         win.scrollBy(0, win.innerHeight);
       });
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(800);
     }
 
     // HTML 파싱
@@ -167,12 +190,13 @@ export async function crawlBunjang(
 
     return results;
   } catch (error) {
-    console.error('번개장터 크롤링 오류:', error);
-    // 에러 발생 시 빈 배열 반환 (다른 플랫폼 크롤링 계속 진행)
+    console.error('[Bunjang] 크롤링 오류:', error instanceof Error ? error.message : error);
+    // 에러 발생 시 수집된 결과까지 반환
     return results;
   } finally {
-    if (browser) {
-      await browser.close();
+    // 브라우저 컨텍스트 반환
+    if (context) {
+      await releasePage(context);
     }
   }
 }

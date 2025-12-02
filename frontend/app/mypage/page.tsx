@@ -1,11 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { setAuthToken } from '@/lib/api';
 import PasswordChangeForm from '@/components/PasswordChangeForm';
-import DeleteAccountModal from '@/components/DeleteAccountModal';
+
+// 모달 컴포넌트 동적 로딩 (필요할 때만 로드)
+const DeleteAccountModal = dynamic(() => import('@/components/DeleteAccountModal'), {
+  ssr: false,
+});
 
 export default function MyPage() {
   const { data: session, status } = useSession();

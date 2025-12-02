@@ -1,15 +1,16 @@
 /**
  * 북마크(찜하기) API 라우트
- * - POST /api/bookmarks - 북마크 추가
- * - GET /api/bookmarks - 북마크 목록 조회
- * - DELETE /api/bookmarks/:id - 북마크 삭제
- * - GET /api/bookmarks/check/:recommendationId - 북마크 여부 확인
+ * @swagger
+ * tags:
+ *   name: Bookmarks
+ *   description: 북마크(찜) API
  */
 
 import { Router, type Request, type Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
-import { asyncHandler, AppError } from '../middleware/errorHandler.js';
+import { asyncHandler } from '../middleware/errorHandler.js';
+import { AppError, ErrorCodes } from '../utils/errors.js';
 import { requireAuth } from '../middleware/auth.js';
 import { paginationSchema, CATEGORY_LABELS, CONDITION_LABELS } from '../utils/validators.js';
 
@@ -37,8 +38,51 @@ const recommendationIdSchema = z.object({
 });
 
 /**
- * POST /api/bookmarks
- * 북마크 추가 (인증 필요)
+ * @swagger
+ * /api/bookmarks:
+ *   post:
+ *     summary: 북마크 추가
+ *     tags: [Bookmarks]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               recommendationId:
+ *                 type: string
+ *                 description: 가격 추천 ID (선택)
+ *               category:
+ *                 $ref: '#/components/schemas/Category'
+ *               productName:
+ *                 type: string
+ *               modelName:
+ *                 type: string
+ *               memo:
+ *                 type: string
+ *                 maxLength: 500
+ *     responses:
+ *       201:
+ *         description: 북마크 추가 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Bookmark'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       409:
+ *         description: 이미 북마크됨
  */
 router.post(
   '/',
@@ -59,7 +103,9 @@ router.post(
       });
 
       if (existingBookmark) {
-        throw new AppError('이미 찜한 항목입니다.', 409);
+        throw new AppError(ErrorCodes.DUPLICATE_RESOURCE, {
+          message: '이미 찜한 항목입니다.',
+        });
       }
 
       // 추천 기록이 존재하는지 확인
@@ -68,7 +114,9 @@ router.post(
       });
 
       if (!recommendation) {
-        throw new AppError('추천 기록을 찾을 수 없습니다.', 404);
+        throw new AppError(ErrorCodes.RESOURCE_NOT_FOUND, {
+          message: '추천 기록을 찾을 수 없습니다.',
+        });
       }
     }
 
@@ -108,8 +156,46 @@ router.post(
 );
 
 /**
- * GET /api/bookmarks
- * 북마크 목록 조회 (인증 필요)
+ * @swagger
+ * /api/bookmarks:
+ *   get:
+ *     summary: 북마크 목록 조회
+ *     tags: [Bookmarks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: 북마크 목록
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Bookmark'
+ *                     pagination:
+ *                       $ref: '#/components/schemas/Pagination'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
  */
 router.get(
   '/',
@@ -165,8 +251,40 @@ router.get(
 );
 
 /**
- * GET /api/bookmarks/check/:recommendationId
- * 특정 추천에 대한 북마크 여부 확인 (인증 필요)
+ * @swagger
+ * /api/bookmarks/check/{recommendationId}:
+ *   get:
+ *     summary: 북마크 여부 확인
+ *     tags: [Bookmarks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: recommendationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 북마크 여부
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     isBookmarked:
+ *                       type: boolean
+ *                     bookmarkId:
+ *                       type: string
+ *                       nullable: true
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
  */
 router.get(
   '/check/:recommendationId',
@@ -198,8 +316,26 @@ router.get(
 );
 
 /**
- * DELETE /api/bookmarks/:id
- * 북마크 삭제 (인증 필요)
+ * @swagger
+ * /api/bookmarks/{id}:
+ *   delete:
+ *     summary: 북마크 삭제
+ *     tags: [Bookmarks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 북마크 삭제 성공
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
  */
 router.delete(
   '/:id',
@@ -214,7 +350,9 @@ router.delete(
     });
 
     if (!bookmark) {
-      throw new AppError('북마크를 찾을 수 없습니다.', 404);
+      throw new AppError(ErrorCodes.RESOURCE_NOT_FOUND, {
+        message: '북마크를 찾을 수 없습니다.',
+      });
     }
 
     await prisma.bookmark.delete({

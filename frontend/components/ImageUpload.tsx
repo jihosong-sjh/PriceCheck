@@ -9,6 +9,7 @@
  * - AI 제품 인식 기능
  */
 import { useState, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { uploadImage, deleteImage, recognizeProduct, ApiException } from '@/lib/api';
 import type { RecognitionResult } from '@/lib/types';
 
@@ -285,11 +286,13 @@ export default function ImageUpload({
           {images.map((image) => (
             <div key={image.key} className="relative group aspect-square">
               <div className="relative w-full h-full rounded-lg overflow-hidden bg-gray-100">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={image.url}
                   alt="업로드된 이미지"
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
+                  className="object-cover"
+                  unoptimized={!image.url.includes('amazonaws.com')}
                 />
               </div>
               {/* 삭제 버튼 */}

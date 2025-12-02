@@ -1,0 +1,138 @@
+{
+  "common": {
+    "appName": "프라이스체크",
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다",
+    "retry": "다시 시도",
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "수정",
+    "close": "닫기",
+    "confirm": "확인",
+    "search": "검색",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "all": "전체",
+    "none": "없음"
+  },
+  "nav": {
+    "priceGuide": "가격 추천",
+    "bookmarks": "찜 목록",
+    "history": "히스토리",
+    "compare": "비교",
+    "alerts": "알림 설정",
+    "mypage": "마이페이지",
+    "login": "로그인",
+    "logout": "로그아웃",
+    "signup": "회원가입"
+  },
+  "auth": {
+    "email": "이메일",
+    "password": "비밀번호",
+    "passwordConfirm": "비밀번호 확인",
+    "loginTitle": "로그인",
+    "signupTitle": "회원가입",
+    "loginButton": "로그인",
+    "signupButton": "회원가입",
+    "noAccount": "계정이 없으신가요?",
+    "hasAccount": "이미 계정이 있으신가요?",
+    "forgotPassword": "비밀번호를 잊으셨나요?",
+    "emailRequired": "이메일을 입력해주세요",
+    "passwordRequired": "비밀번호를 입력해주세요",
+    "invalidEmail": "올바른 이메일 형식이 아닙니다",
+    "passwordTooShort": "비밀번호는 8자 이상이어야 합니다"
+  },
+  "price": {
+    "title": "중고 가격 추천",
+    "description": "중고 전자제품의 적정 판매가를 추천받으세요",
+    "category": "카테고리",
+    "productName": "제품명",
+    "modelName": "모델명",
+    "condition": "상태",
+    "conditionGood": "상 (외관 깨끗, 기능 정상)",
+    "conditionFair": "중 (사용감 있음, 기능 정상)",
+    "conditionPoor": "하 (외관 손상 있음, 일부 기능 이상)",
+    "recommendButton": "가격 추천 받기",
+    "recommendedPrice": "추천 판매가",
+    "priceRange": "시세 범위",
+    "minPrice": "최저가",
+    "maxPrice": "최고가",
+    "avgPrice": "평균가",
+    "sampleCount": "분석 매물 수",
+    "confidence": "신뢰도",
+    "confidenceHigh": "높음",
+    "confidenceMedium": "보통",
+    "confidenceLow": "낮음"
+  },
+  "category": {
+    "SMARTPHONE": "스마트폰",
+    "LAPTOP": "노트북",
+    "TABLET": "태블릿",
+    "SMARTWATCH": "스마트워치",
+    "EARPHONE": "이어폰/헤드폰",
+    "SPEAKER": "블루투스 스피커",
+    "MONITOR": "모니터",
+    "KEYBOARD_MOUSE": "키보드/마우스",
+    "TV": "TV"
+  },
+  "platform": {
+    "BUNJANG": "번개장터",
+    "JOONGONARA": "중고나라",
+    "HELLOMARKET": "헬로마켓"
+  },
+  "bookmark": {
+    "title": "찜 목록",
+    "empty": "아직 찜한 상품이 없습니다",
+    "emptyDescription": "가격 추천 결과에서 하트를 눌러 찜해보세요",
+    "added": "찜 목록에 추가되었습니다",
+    "removed": "찜 목록에서 제거되었습니다"
+  },
+  "history": {
+    "title": "추천 히스토리",
+    "empty": "아직 추천 기록이 없습니다",
+    "emptyDescription": "가격 추천을 받으면 이곳에서 기록을 확인할 수 있습니다",
+    "searchDate": "조회일"
+  },
+  "compare": {
+    "title": "상품 비교",
+    "empty": "비교할 상품이 없습니다",
+    "emptyDescription": "가격 조회 결과에서 비교 버튼을 눌러 상품을 추가해 보세요",
+    "priceDifference": "가격 차이",
+    "lowestPrice": "최저가 상품",
+    "highestPrice": "최고가 상품",
+    "addMore": "개 상품을 더 추가할 수 있습니다",
+    "clearAll": "전체 삭제",
+    "maxItems": "비교는 최대 {count}개까지 가능합니다"
+  },
+  "alert": {
+    "title": "가격 알림",
+    "targetPrice": "목표 가격",
+    "currentPrice": "현재 가격",
+    "created": "알림이 등록되었습니다",
+    "deleted": "알림이 삭제되었습니다"
+  },
+  "share": {
+    "title": "공유하기",
+    "kakao": "카카오톡",
+    "twitter": "X (트위터)",
+    "facebook": "페이스북",
+    "copyLink": "링크 복사",
+    "copied": "복사됨!"
+  },
+  "chart": {
+    "priceHistory": "가격 추이",
+    "priceDistribution": "가격 분포",
+    "platformComparison": "플랫폼별 비교",
+    "period": "기간",
+    "days": "일"
+  },
+  "error": {
+    "notFound": "페이지를 찾을 수 없습니다",
+    "serverError": "서버 오류가 발생했습니다",
+    "networkError": "네트워크 연결을 확인해주세요",
+    "unauthorized": "로그인이 필요합니다",
+    "forbidden": "접근 권한이 없습니다"
+  }
+}

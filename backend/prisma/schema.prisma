@@ -56,8 +56,38 @@ model User {
   bookmarks       Bookmark[]
   alerts          PriceAlert[]
   notifications   Notification[]
+  refreshTokens   RefreshToken[]
 
   @@map("users")
+}
+
+// 리프레시 토큰 모델 (JWT 토큰 갱신용)
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  revokedAt DateTime? @map("revoked_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+// 토큰 블랙리스트 (로그아웃된 액세스 토큰)
+model TokenBlacklist {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([token])
+  @@index([expiresAt])
+  @@map("token_blacklist")
 }
 
 // 가격 추천 모델

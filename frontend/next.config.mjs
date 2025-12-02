@@ -1,9 +1,15 @@
 import withPWAInit from 'next-pwa';
+import bundleAnalyzer from '@next/bundle-analyzer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Bundle Analyzer 설정
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const withPWA = withPWAInit({
   dest: 'public',
@@ -111,4 +117,4 @@ const nextConfig = {
   },
 };
 
-export default withPWA(nextConfig);
+export default withBundleAnalyzer(withPWA(nextConfig));

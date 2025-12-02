@@ -1,6 +1,6 @@
 'use client';
 
-import { type MarketDataItem, PLATFORM_LABELS } from '@/lib/types';
+import { type MarketDataItem, PLATFORM_LABELS, getSaleStatusLabel } from '@/lib/types';
 
 interface MarketComparisonProps {
   marketData: MarketDataItem[];
@@ -125,7 +125,7 @@ export default function MarketComparison({ marketData }: MarketComparisonProps) 
                   </td>
                   <td className="py-3 text-center">
                     <span className="text-sm text-gray-600 dark:text-gray-300">
-                      {item.condition || '-'}
+                      {getSaleStatusLabel(item.platform, item.condition) || '-'}
                     </span>
                   </td>
                   <td className="py-3 text-right">
@@ -215,7 +215,7 @@ export default function MarketComparison({ marketData }: MarketComparisonProps) 
                 </span>
               </div>
               {item.condition && (
-                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">상태: {item.condition}</p>
+                <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">상태: {getSaleStatusLabel(item.platform, item.condition)}</p>
               )}
             </div>
           );

@@ -1,0 +1,138 @@
+{
+  "common": {
+    "appName": "PriceCheck",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "confirm": "Confirm",
+    "search": "Search",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "all": "All",
+    "none": "None"
+  },
+  "nav": {
+    "priceGuide": "Price Guide",
+    "bookmarks": "Bookmarks",
+    "history": "History",
+    "compare": "Compare",
+    "alerts": "Alerts",
+    "mypage": "My Page",
+    "login": "Login",
+    "logout": "Logout",
+    "signup": "Sign Up"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "passwordConfirm": "Confirm Password",
+    "loginTitle": "Login",
+    "signupTitle": "Sign Up",
+    "loginButton": "Login",
+    "signupButton": "Sign Up",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "forgotPassword": "Forgot your password?",
+    "emailRequired": "Email is required",
+    "passwordRequired": "Password is required",
+    "invalidEmail": "Invalid email format",
+    "passwordTooShort": "Password must be at least 8 characters"
+  },
+  "price": {
+    "title": "Used Price Recommendation",
+    "description": "Get recommended selling prices for used electronics",
+    "category": "Category",
+    "productName": "Product Name",
+    "modelName": "Model Name",
+    "condition": "Condition",
+    "conditionGood": "Good (Clean appearance, fully functional)",
+    "conditionFair": "Fair (Signs of use, fully functional)",
+    "conditionPoor": "Poor (Visible damage, partial function issues)",
+    "recommendButton": "Get Price Recommendation",
+    "recommendedPrice": "Recommended Price",
+    "priceRange": "Price Range",
+    "minPrice": "Lowest",
+    "maxPrice": "Highest",
+    "avgPrice": "Average",
+    "sampleCount": "Analyzed Listings",
+    "confidence": "Confidence",
+    "confidenceHigh": "High",
+    "confidenceMedium": "Medium",
+    "confidenceLow": "Low"
+  },
+  "category": {
+    "SMARTPHONE": "Smartphone",
+    "LAPTOP": "Laptop",
+    "TABLET": "Tablet",
+    "SMARTWATCH": "Smartwatch",
+    "EARPHONE": "Earphones/Headphones",
+    "SPEAKER": "Bluetooth Speaker",
+    "MONITOR": "Monitor",
+    "KEYBOARD_MOUSE": "Keyboard/Mouse",
+    "TV": "TV"
+  },
+  "platform": {
+    "BUNJANG": "Bunjang",
+    "JOONGONARA": "Joongonara",
+    "HELLOMARKET": "HelloMarket"
+  },
+  "bookmark": {
+    "title": "Bookmarks",
+    "empty": "No bookmarks yet",
+    "emptyDescription": "Tap the heart icon on price results to bookmark items",
+    "added": "Added to bookmarks",
+    "removed": "Removed from bookmarks"
+  },
+  "history": {
+    "title": "Recommendation History",
+    "empty": "No history yet",
+    "emptyDescription": "Your price recommendations will appear here",
+    "searchDate": "Search Date"
+  },
+  "compare": {
+    "title": "Compare Products",
+    "empty": "No products to compare",
+    "emptyDescription": "Add products from price results using the compare button",
+    "priceDifference": "Price Difference",
+    "lowestPrice": "Lowest Price Item",
+    "highestPrice": "Highest Price Item",
+    "addMore": " more products can be added",
+    "clearAll": "Clear All",
+    "maxItems": "You can compare up to {count} items"
+  },
+  "alert": {
+    "title": "Price Alert",
+    "targetPrice": "Target Price",
+    "currentPrice": "Current Price",
+    "created": "Alert has been set",
+    "deleted": "Alert has been removed"
+  },
+  "share": {
+    "title": "Share",
+    "kakao": "KakaoTalk",
+    "twitter": "X (Twitter)",
+    "facebook": "Facebook",
+    "copyLink": "Copy Link",
+    "copied": "Copied!"
+  },
+  "chart": {
+    "priceHistory": "Price History",
+    "priceDistribution": "Price Distribution",
+    "platformComparison": "Platform Comparison",
+    "period": "Period",
+    "days": "days"
+  },
+  "error": {
+    "notFound": "Page not found",
+    "serverError": "Server error occurred",
+    "networkError": "Please check your network connection",
+    "unauthorized": "Login required",
+    "forbidden": "Access denied"
+  }
+}
