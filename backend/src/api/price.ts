@@ -644,4 +644,190 @@ router.post(
   }
 );
 
+// 가격 히스토리 요청 스키마
+const priceHistoryRequestSchema = z.object({
+  productName: productNameSchema,
+  days: z.coerce.number().int().min(1).max(90).default(30),
+});
+
+// 가격 히스토리 응답 타입
+interface PriceHistoryDataPoint {
+  date: string;
+  avgPrice: number;
+  minPrice: number;
+  maxPrice: number;
+  count: number;
+  platforms: Record<string, { avgPrice: number; count: number }>;
+}
+
+interface PriceHistoryResponse {
+  success: boolean;
+  data: {
+    productName: string;
+    period: {
+      startDate: string;
+      endDate: string;
+      days: number;
+    };
+    history: PriceHistoryDataPoint[];
+    summary: {
+      totalDataPoints: number;
+      overallAvgPrice: number;
+      overallMinPrice: number;
+      overallMaxPrice: number;
+      priceChange: number;
+      priceChangePercent: number;
+    };
+  };
+}
+
+/**
+ * @swagger
+ * /api/price/history:
+ *   get:
+ *     summary: 가격 히스토리 조회
+ *     description: 제품의 시간별 가격 추이를 조회합니다.
+ *     tags: [Price]
+ *     parameters:
+ *       - in: query
+ *         name: productName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: 제품명
+ *       - in: query
+ *         name: days
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 90
+ *           default: 30
+ *         description: 조회 기간 (일)
+ *     responses:
+ *       200:
+ *         description: 가격 히스토리
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ */
+router.get('/history', async (req: Request, res: Response<PriceHistoryResponse | { success: false; error: object }>, next: NextFunction) => {
+  try {
+    const { productName, days } = priceHistoryRequestSchema.parse(req.query);
+
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    // MarketData에서 날짜별로 그룹핑하여 조회
+    const marketData = await prisma.marketData.findMany({
+      where: {
+        productName: {
+          contains: productName,
+          mode: 'insensitive',
+        },
+        scrapedAt: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      orderBy: {
+        scrapedAt: 'asc',
+      },
+    });
+
+    // 날짜별로 그룹핑
+    const dateMap = new Map<string, { prices: number[]; platforms: Map<string, number[]> }>();
+
+    for (const item of marketData) {
+      const dateKey = item.scrapedAt.toISOString().split('T')[0];
+
+      if (!dateMap.has(dateKey)) {
+        dateMap.set(dateKey, { prices: [], platforms: new Map() });
+      }
+
+      const dateData = dateMap.get(dateKey)!;
+      dateData.prices.push(item.price);
+
+      const platformName = item.platform;
+      if (!dateData.platforms.has(platformName)) {
+        dateData.platforms.set(platformName, []);
+      }
+      dateData.platforms.get(platformName)!.push(item.price);
+    }
+
+    // 히스토리 데이터 포인트 생성
+    const history: PriceHistoryDataPoint[] = [];
+    let overallPrices: number[] = [];
+
+    dateMap.forEach((data, date) => {
+      const prices = data.prices;
+      overallPrices = overallPrices.concat(prices);
+
+      const platforms: Record<string, { avgPrice: number; count: number }> = {};
+      data.platforms.forEach((platPrices, platform) => {
+        platforms[platform] = {
+          avgPrice: Math.round(platPrices.reduce((a, b) => a + b, 0) / platPrices.length),
+          count: platPrices.length,
+        };
+      });
+
+      history.push({
+        date,
+        avgPrice: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length),
+        minPrice: Math.min(...prices),
+        maxPrice: Math.max(...prices),
+        count: prices.length,
+        platforms,
+      });
+    });
+
+    // 가격 변동 계산
+    let priceChange = 0;
+    let priceChangePercent = 0;
+
+    if (history.length >= 2) {
+      const firstPrice = history[0].avgPrice;
+      const lastPrice = history[history.length - 1].avgPrice;
+      priceChange = lastPrice - firstPrice;
+      priceChangePercent = Math.round((priceChange / firstPrice) * 100 * 100) / 100;
+    }
+
+    const response: PriceHistoryResponse = {
+      success: true,
+      data: {
+        productName,
+        period: {
+          startDate: startDate.toISOString().split('T')[0],
+          endDate: endDate.toISOString().split('T')[0],
+          days,
+        },
+        history,
+        summary: {
+          totalDataPoints: overallPrices.length,
+          overallAvgPrice: overallPrices.length > 0 ? Math.round(overallPrices.reduce((a, b) => a + b, 0) / overallPrices.length) : 0,
+          overallMinPrice: overallPrices.length > 0 ? Math.min(...overallPrices) : 0,
+          overallMaxPrice: overallPrices.length > 0 ? Math.max(...overallPrices) : 0,
+          priceChange,
+          priceChangePercent,
+        },
+      },
+    };
+
+    return res.json(response);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const appError = new AppError(ErrorCodes.VALIDATION_ERROR, {
+        details: error.errors.map((e) => ({
+          field: e.path.join('.'),
+          message: e.message,
+        })),
+      });
+      return res.status(400).json({
+        success: false,
+        error: appError.toResponse().error,
+      });
+    }
+    return next(error);
+  }
+});
+
 export default router;

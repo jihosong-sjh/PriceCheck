@@ -10,6 +10,8 @@ import { calculateCV } from '@/lib/chartUtils';
 import MarketComparison from './MarketComparison';
 import BookmarkButton from './BookmarkButton';
 import PriceAlertButton from './PriceAlertButton';
+import ShareButton from './ShareButton';
+import CompareButton from './CompareButton';
 
 // 차트 컴포넌트 동적 로딩 (SSR 비활성화)
 const ConfidenceIndicator = dynamic(
@@ -26,6 +28,10 @@ const PlatformComparisonChart = dynamic(
 );
 const PriceExplanationCard = dynamic(
   () => import('./charts/PriceExplanationCard'),
+  { ssr: false }
+);
+const PriceHistoryChart = dynamic(
+  () => import('./charts/PriceHistoryChart'),
   { ssr: false }
 );
 
@@ -92,19 +98,44 @@ export default function PriceResult({ result, error, onReset, recommendationId }
     <div className="space-y-6">
       {/* 추천 가격 카드 */}
       <div className="card bg-gradient-to-br from-primary-50 to-blue-50 dark:from-blue-900/30 dark:to-primary-900/30 border-primary-200 dark:border-primary-700 relative">
-        {/* 찜하기 & 알림 버튼 */}
-        {recommendationId && (
-          <div className="absolute top-4 right-4 flex items-center gap-2">
-            <PriceAlertButton
-              category={category}
+        {/* 찜하기 & 알림 & 공유 & 비교 버튼 */}
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          {recommendationId && (
+            <CompareButton
+              id={recommendationId}
               productName={productName}
               modelName={modelName}
+              category={category}
               condition={condition}
-              currentPrice={recommendedPrice}
+              recommendedPrice={recommendedPrice}
+              priceMin={priceMin}
+              priceMax={priceMax}
+              size="md"
             />
-            <BookmarkButton recommendationId={recommendationId} size="md" />
-          </div>
-        )}
+          )}
+          <ShareButton
+            productName={productName}
+            modelName={modelName}
+            category={category}
+            condition={condition}
+            recommendedPrice={recommendedPrice}
+            priceMin={priceMin}
+            priceMax={priceMax}
+            size="md"
+          />
+          {recommendationId && (
+            <>
+              <PriceAlertButton
+                category={category}
+                productName={productName}
+                modelName={modelName}
+                condition={condition}
+                currentPrice={recommendedPrice}
+              />
+              <BookmarkButton recommendationId={recommendationId} size="md" />
+            </>
+          )}
+        </div>
         <div className="text-center">
           <h3 className="text-lg font-medium text-gray-600 dark:text-gray-300 mb-2">추천 판매가</h3>
           <div className="price-display text-4xl dark:text-white">
@@ -181,6 +212,9 @@ export default function PriceResult({ result, error, onReset, recommendationId }
       {result.marketDataSnapshot && result.marketDataSnapshot.length > 0 && (
         <PlatformComparisonChart marketData={result.marketDataSnapshot} />
       )}
+
+      {/* 가격 히스토리 차트 */}
+      <PriceHistoryChart productName={productName} initialDays={30} />
 
       {/* 시세 비교 정보 */}
       {result.marketDataSnapshot && result.marketDataSnapshot.length > 0 && (

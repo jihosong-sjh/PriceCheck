@@ -365,6 +365,37 @@ export interface QuickRecommendResponse extends PriceRecommendResponse {
   };
 }
 
+// ========== 가격 히스토리 타입 ==========
+
+// 가격 히스토리 데이터 포인트
+export interface PriceHistoryDataPoint {
+  date: string;
+  avgPrice: number;
+  minPrice: number;
+  maxPrice: number;
+  count: number;
+  platforms: Record<string, { avgPrice: number; count: number }>;
+}
+
+// 가격 히스토리 응답
+export interface PriceHistoryResponse {
+  productName: string;
+  period: {
+    startDate: string;
+    endDate: string;
+    days: number;
+  };
+  history: PriceHistoryDataPoint[];
+  summary: {
+    totalDataPoints: number;
+    overallAvgPrice: number;
+    overallMinPrice: number;
+    overallMaxPrice: number;
+    priceChange: number;
+    priceChangePercent: number;
+  };
+}
+
 // ========== UI 상태 타입 ==========
 
 // 로딩 상태

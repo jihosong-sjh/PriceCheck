@@ -27,6 +27,7 @@ import type {
   QuickRecommendRequest,
   QuickRecommendResponse,
   Category,
+  PriceHistoryResponse,
 } from './types';
 
 // API 기본 URL
@@ -785,4 +786,24 @@ export async function quickPriceRecommend(
     createdAt: new Date().toISOString(),
     categoryDetection,
   };
+}
+
+// ========== 가격 히스토리 API ==========
+
+// 백엔드 가격 히스토리 응답 타입 (내부 사용)
+interface BackendPriceHistoryResponse {
+  success: boolean;
+  data: PriceHistoryResponse;
+}
+
+// 가격 히스토리 조회
+export async function getPriceHistory(
+  productName: string,
+  days: number = 30
+): Promise<PriceHistoryResponse> {
+  const response = await request<BackendPriceHistoryResponse>('/price/history', {
+    params: { productName, days },
+  });
+
+  return response.data;
 }
