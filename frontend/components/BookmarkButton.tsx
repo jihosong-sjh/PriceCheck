@@ -11,6 +11,11 @@ interface BookmarkButtonProps {
   showText?: boolean;
 }
 
+// CUID 형식 검증 (c로 시작하고 영숫자로 구성)
+function isValidCuid(id: string): boolean {
+  return /^c[a-z0-9]{24,}$/i.test(id);
+}
+
 export default function BookmarkButton({
   recommendationId,
   className = '',
@@ -45,6 +50,12 @@ export default function BookmarkButton({
       return;
     }
 
+    // 유효한 CUID가 아닌 경우 (비로그인 시 생성된 임시 UUID 등) 체크 스킵
+    if (!isValidCuid(recommendationId)) {
+      setIsChecking(false);
+      return;
+    }
+
     setAuthToken(session.accessToken as string);
 
     const checkBookmarkStatus = async () => {
@@ -65,6 +76,12 @@ export default function BookmarkButton({
   const handleToggle = async () => {
     if (!session) {
       alert('로그인이 필요한 기능입니다.');
+      return;
+    }
+
+    // 유효한 CUID가 아닌 경우 (비로그인 시 생성된 조회 결과)
+    if (!isValidCuid(recommendationId)) {
+      alert('로그인 후 조회한 결과만 찜할 수 있습니다.');
       return;
     }
 
