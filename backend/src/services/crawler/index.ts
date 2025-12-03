@@ -9,6 +9,7 @@ import joongonaraCrawler from './joongonara.js';
 import hellomarketCrawler from './hellomarket.js';
 import type { Platform, Category } from '../../utils/validators.js';
 import searchQueryRefiner from '../searchQueryRefiner.js';
+import crawlerCache from '../crawlerCache.js';
 
 // 크롤러 옵션
 export interface CrawlerOptions {
@@ -34,6 +35,7 @@ export interface CrawlerResult {
     errors: string[];
     usedQuery?: string;           // 실제 사용된 검색어
     queryRefinementAttempts?: number;  // 검색어 정제 시도 횟수
+    fromCache?: boolean;          // 캐시에서 반환된 결과인지 여부
   };
 }
 
@@ -132,6 +134,7 @@ async function crawlWithQuery(
 
 /**
  * 모든 플랫폼에서 병렬로 크롤링
+ * 캐시된 결과가 있으면 즉시 반환, 없으면 크롤링 후 캐싱
  * 검색 결과가 부족하면 검색어를 단계적으로 정제하여 재시도
  */
 export async function crawlAllPlatforms(
@@ -140,6 +143,22 @@ export async function crawlAllPlatforms(
   category?: Category,
   options?: CrawlerOptions
 ): Promise<CrawlerResult> {
+  const cacheKey = { productName, modelName, category };
+
+  // 1. 캐시 확인
+  const cachedResult = crawlerCache.get(cacheKey);
+  if (cachedResult) {
+    // 캐시된 결과에 캐시 사용 표시 추가
+    return {
+      ...cachedResult,
+      stats: {
+        ...cachedResult.stats,
+        fromCache: true,
+      },
+    };
+  }
+
+  // 2. 캐시 미스 - 실제 크롤링 수행
   const opts = { ...DEFAULT_OPTIONS, ...options };
   const startTime = Date.now();
   let allErrors: string[] = [];
@@ -199,7 +218,7 @@ export async function crawlAllPlatforms(
 
   const crawlDuration = Date.now() - startTime;
 
-  return {
+  const result: CrawlerResult = {
     items: allItems,
     stats: {
       totalItems: allItems.length,
@@ -208,8 +227,14 @@ export async function crawlAllPlatforms(
       errors: allErrors,
       usedQuery,
       queryRefinementAttempts: attemptCount,
+      fromCache: false,
     },
   };
+
+  // 3. 결과 캐싱
+  crawlerCache.set(cacheKey, result);
+
+  return result;
 }
 
 /**
