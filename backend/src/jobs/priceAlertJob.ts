@@ -5,12 +5,10 @@
  */
 
 import cron from 'node-cron';
-import { PrismaClient } from '@prisma/client';
 import { crawlAllPlatforms } from '../services/crawler/index.js';
 import { calculatePrice } from '../services/priceCalculator.js';
 import type { Category, Condition } from '../utils/validators.js';
-
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 
 // 알림 체크 간격 (분)
 const CHECK_INTERVAL_MINUTES = 15;

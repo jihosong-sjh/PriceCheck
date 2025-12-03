@@ -10,10 +10,8 @@
 import bcrypt from 'bcryptjs';
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
-import { PrismaClient } from '@prisma/client';
 import { AppError } from '../middleware/errorHandler.js';
-
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 
 // JWT 설정
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';

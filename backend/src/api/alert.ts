@@ -7,14 +7,12 @@
  */
 
 import { Router, type Request, type Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { AppError, ErrorCodes } from '../utils/errors.js';
 import { requireAuth } from '../middleware/auth.js';
 import { paginationSchema, CATEGORY_LABELS, CONDITION_LABELS } from '../utils/validators.js';
-
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 const router = Router();
 
 // 사용자당 최대 알림 개수

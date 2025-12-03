@@ -8,13 +8,11 @@
  */
 
 import { Router, type Request, type Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { requireAuth } from '../middleware/auth.js';
 import { paginationSchema } from '../utils/validators.js';
-
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 const router = Router();
 
 // 알림 ID 파라미터 스키마
