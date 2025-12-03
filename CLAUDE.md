@@ -27,6 +27,106 @@ TypeScript 5.x, Node.js 20 LTS: Follow standard conventions
 
 <!-- MANUAL ADDITIONS START -->
 
+## 테스트 전략 (2025-12-03)
+
+### 테스트 피라미드 (우선순위)
+
+```
+        ▲
+       /E2E\        10% - 핵심 유저 플로우만
+      /─────\
+     /통합   \      30% - API + 외부 서비스 모킹
+    /─────────\
+   /  단위     \    60% - 순수 비즈니스 로직
+  /─────────────\
+```
+
+### TDD vs 구현 후 테스트
+
+| 상황 | 접근법 |
+|------|--------|
+| 요구사항 명확 (가격 계산 등) | TDD 가능 |
+| 탐색적 개발 (크롤링 등) | 구현 후 테스트 |
+| 외부 의존성 높음 | 통합 테스트 중심 |
+
+### 이 프로젝트의 테스트 우선순위
+
+1. **외부 서비스 실패 시나리오** (통합 테스트) - 가장 중요
+   - 네이버 API 실패 → 폴백 동작 확인
+   - 크롤링 실패 → 에러 응답 형식 확인
+
+2. **프론트-백엔드 계약** (Contract Test)
+   - API 응답 스키마 검증
+   - 프론트가 기대하는 필드 누락 방지
+
+3. **핵심 비즈니스 로직** (단위 테스트)
+   - `priceCalculator.ts` - 가격 계산
+   - 데이터 변환 함수들
+
+4. **E2E** (배포 전 스모크 테스트)
+   - 검색 → 결과 → 북마크 플로우
+
+### 테스트 작성 가이드
+
+```typescript
+// 1. 통합 테스트 예시 (외부 서비스 실패)
+test('네이버 API 실패 시 폴백 응답 반환', async () => {
+  // 네이버 API 모킹 → 500 에러
+  // 폴백 로직 동작 확인
+  // 응답 스키마 검증
+});
+
+// 2. Contract Test 예시 (응답 형식 검증)
+const expectedSchema = {
+  category: expect.any(String),
+  crawlStats: expect.objectContaining({ total: expect.any(Number) }),
+  items: expect.any(Array)
+};
+
+test('검색 API 응답 형식 준수', async () => {
+  const response = await request(app).get('/api/search?q=테스트');
+  expect(response.body).toMatchObject(expectedSchema);
+});
+
+// 3. 단위 테스트 예시 (순수 로직)
+test('평균 가격 계산', () => {
+  expect(calculateAverage([10000, 20000, 30000])).toBe(20000);
+});
+```
+
+### 테스트 파일 위치
+
+```
+backend/
+├── tests/
+│   ├── unit/           # 단위 테스트
+│   ├── integration/    # 통합 테스트 (API + 모킹)
+│   └── contract/       # 응답 스키마 검증
+frontend/
+├── __tests__/          # 컴포넌트 테스트
+├── e2e/                # Playwright E2E
+```
+
+### 테스트 실행 명령어
+
+```bash
+# 백엔드
+cd backend && npm test              # 전체
+cd backend && npm test -- --watch   # 워치 모드
+cd backend && npm test -- unit      # 단위만
+cd backend && npm test -- integration  # 통합만
+
+# 프론트엔드 E2E
+cd frontend && npx playwright test
+```
+
+### 새 기능 개발 시 체크리스트
+
+- [ ] 외부 API 호출이 있는가? → 실패 시나리오 통합 테스트 필수
+- [ ] 새 API 엔드포인트인가? → 응답 스키마 Contract Test 추가
+- [ ] 계산/변환 로직인가? → 단위 테스트 추가
+- [ ] 핵심 유저 플로우 변경인가? → E2E 업데이트 검토
+
 ## 앱/웹 서비스 출시 전략 (2025-11-29)
 
 ### 2단계 접근 방식

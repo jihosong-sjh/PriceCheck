@@ -2,11 +2,13 @@
 
 [![Live Demo](https://img.shields.io/badge/Demo-Live-brightgreen?style=flat-square)](https://pricecheck.kr)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![React Native](https://img.shields.io/badge/React_Native-0.81-61DAFB?style=flat-square&logo=react)](https://reactnative.dev/)
+[![Expo](https://img.shields.io/badge/Expo-54-000020?style=flat-square&logo=expo)](https://expo.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Express](https://img.shields.io/badge/Express-4.21-000000?style=flat-square&logo=express)](https://expressjs.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
 
-> **AI 이미지 인식 + 실시간 크롤링 기반 중고 전자제품 적정 가격 추천 풀스택 웹 서비스**
+> **AI 이미지 인식 + 실시간 크롤링 기반 중고 전자제품 적정 가격 추천 풀스택 서비스 (웹 + 모바일 앱)**
 
 중고 전자제품을 사거나 팔 때 적정 가격을 모르시나요? **PriceCheck**는 번개장터, 중고나라 등 주요 플랫폼의 실시간 시세를 분석하여 신뢰할 수 있는 가격을 추천합니다.
 
@@ -14,8 +16,9 @@
 
 ## 라이브 데모
 
-- **서비스 URL**: https://pricecheck.kr
+- **웹 서비스**: https://pricecheck.kr
 - **API 서버**: https://api.pricecheck.kr
+- **모바일 앱**: 개발 완료 (Play Store 출시 준비 중)
 
 ---
 
@@ -56,16 +59,16 @@
 - **북마크**: 관심 상품 찜하기 (최대 10개)
 - **가격 알림**: 목표 가격 도달 시 알림
 
-### 5. PWA 지원
-- **모바일 설치**: 홈 화면에 앱처럼 추가 가능
-- **오프라인 캐싱**: 기본 리소스 캐싱
+### 5. 멀티 플랫폼
+- **PWA 웹앱**: 홈 화면에 앱처럼 추가 가능
+- **React Native 앱**: Android/iOS 네이티브 앱
 - **반응형 디자인**: 모바일/태블릿/데스크톱 최적화
 
 ---
 
 ## 기술 스택
 
-### Frontend
+### Frontend (Web)
 | 기술 | 버전 | 용도 |
 |-----|------|-----|
 | Next.js | 14.2 | React 풀스택 프레임워크 |
@@ -76,6 +79,19 @@
 | Recharts | 3.5 | 차트 시각화 |
 | next-pwa | 5.6 | PWA 지원 |
 | next-themes | 0.4 | 다크모드 |
+
+### Mobile App (React Native)
+| 기술 | 버전 | 용도 |
+|-----|------|-----|
+| React Native | 0.81 | 크로스플랫폼 모바일 프레임워크 |
+| Expo | 54 | React Native 개발 플랫폼 |
+| React Navigation | 7.x | 네비게이션 |
+| React Query | 5.x | 서버 상태 관리 |
+| Zustand | 5.x | 클라이언트 상태 관리 |
+| NativeWind | 4.x | Tailwind CSS for React Native |
+| React Hook Form | 7.x | 폼 관리 |
+| Zod | 4.x | 스키마 검증 |
+| react-native-chart-kit | 6.x | 차트 시각화 |
 
 ### Backend
 | 기술 | 버전 | 용도 |
@@ -109,12 +125,16 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Frontend (Vercel)                            │
-│                    Next.js 14 + PWA                             │
-│   pricecheck.kr                                                 │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │ HTTPS / REST API
-                           ▼
+│                         Clients                                  │
+│  ┌─────────────────────┐    ┌─────────────────────────────────┐ │
+│  │   Web (Vercel)      │    │   Mobile App (React Native)     │ │
+│  │   Next.js 14 + PWA  │    │   Expo + React Navigation       │ │
+│  │   pricecheck.kr     │    │   Android / iOS                 │ │
+│  └──────────┬──────────┘    └───────────────┬─────────────────┘ │
+└─────────────┼───────────────────────────────┼───────────────────┘
+              │         HTTPS / REST API      │
+              └───────────────┬───────────────┘
+                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                    Backend (Railway)                            │
 │                    Express + TypeScript                         │
@@ -161,34 +181,69 @@
 ## 프로젝트 구조
 
 ```
-PriceCheck/
-├── frontend/                    # Next.js 프론트엔드
-│   ├── app/                     # App Router 페이지
-│   │   ├── page.tsx             # 홈
-│   │   ├── price-guide/         # 가격 추천 (핵심)
-│   │   ├── history/             # 조회 히스토리
-│   │   ├── bookmarks/           # 찜 목록
-│   │   ├── alerts/              # 가격 알림
-│   │   └── (auth)/              # 로그인/회원가입
-│   ├── components/              # React 컴포넌트
-│   │   └── charts/              # 차트 컴포넌트
-│   ├── lib/                     # API 클라이언트, 타입
-│   └── public/                  # PWA 에셋
+PriceCheck/                         # 메인 저장소 (Web)
+├── frontend/                       # Next.js 웹 프론트엔드
+│   ├── app/                        # App Router 페이지
+│   │   ├── page.tsx                # 홈
+│   │   ├── price-guide/            # 가격 추천 (핵심)
+│   │   ├── history/                # 조회 히스토리
+│   │   ├── bookmarks/              # 찜 목록
+│   │   ├── alerts/                 # 가격 알림
+│   │   └── (auth)/                 # 로그인/회원가입
+│   ├── components/                 # React 컴포넌트
+│   │   └── charts/                 # 차트 컴포넌트
+│   ├── lib/                        # API 클라이언트, 타입
+│   └── public/                     # PWA 에셋
 │
-├── backend/                     # Express 백엔드
+├── backend/                        # Express 백엔드
 │   ├── src/
-│   │   ├── api/                 # API 라우트
-│   │   ├── services/            # 비즈니스 로직
-│   │   │   ├── crawler/         # 웹 크롤러
+│   │   ├── api/                    # API 라우트
+│   │   ├── services/               # 비즈니스 로직
+│   │   │   ├── crawler/            # 웹 크롤러
 │   │   │   ├── priceCalculator.ts
 │   │   │   └── visionService.ts
-│   │   └── middleware/          # 인증, 에러 처리
-│   ├── prisma/                  # DB 스키마
-│   └── railway.json             # Railway 배포 설정
+│   │   └── middleware/             # 인증, 에러 처리
+│   ├── prisma/                     # DB 스키마
+│   └── railway.json                # Railway 배포 설정
 │
-├── docker-compose.yml           # 로컬 DB 설정
-├── DEPLOY.md                    # 배포 가이드
+├── docker-compose.yml              # 로컬 DB 설정
+├── DEPLOY.md                       # 배포 가이드
 └── README.md
+
+PriceCheckApp/                      # 별도 저장소 (Mobile)
+├── App.tsx                         # 앱 진입점
+├── src/
+│   ├── screens/                    # 화면 컴포넌트
+│   │   ├── HomeScreen.tsx          # 홈
+│   │   ├── PriceGuideScreen.tsx    # 가격 추천
+│   │   ├── ResultScreen.tsx        # 결과 화면
+│   │   ├── HistoryScreen.tsx       # 히스토리
+│   │   ├── BookmarksScreen.tsx     # 북마크
+│   │   ├── AlertsScreen.tsx        # 가격 알림
+│   │   ├── MyPageScreen.tsx        # 마이페이지
+│   │   ├── LoginScreen.tsx         # 로그인
+│   │   └── SignupScreen.tsx        # 회원가입
+│   ├── components/                 # 재사용 컴포넌트
+│   │   ├── charts/                 # 차트 컴포넌트
+│   │   ├── common/                 # 공통 UI
+│   │   ├── search/                 # 검색 관련
+│   │   └── modals/                 # 모달
+│   ├── navigation/                 # 네비게이션
+│   │   ├── RootNavigator.tsx       # 루트 네비게이터
+│   │   ├── AuthNavigator.tsx       # 인증 네비게이터
+│   │   └── MainNavigator.tsx       # 메인 네비게이터
+│   ├── contexts/                   # Context API
+│   │   ├── AuthContext.tsx         # 인증 상태
+│   │   └── ToastContext.tsx        # 토스트 알림
+│   ├── lib/                        # 유틸리티
+│   │   ├── api.ts                  # API 클라이언트
+│   │   ├── types.ts                # 타입 정의
+│   │   └── storage.ts              # 로컬 저장소
+│   └── utils/                      # 헬퍼 함수
+├── assets/                         # 이미지, 아이콘
+├── app.json                        # Expo 설정
+├── eas.json                        # EAS Build 설정
+└── tailwind.config.js              # NativeWind 설정
 ```
 
 ---
@@ -200,11 +255,16 @@ PriceCheck/
 - Docker (PostgreSQL용)
 - Google Cloud 계정 (Vision API)
 - AWS 계정 (S3)
+- Android Studio (모바일 앱 개발 시)
 
 ### 1. 저장소 클론
 ```bash
+# 웹 프로젝트
 git clone https://github.com/jihosong-sjh/PriceCheck.git
 cd PriceCheck
+
+# 모바일 앱 (별도)
+git clone https://github.com/jihosong-sjh/PriceCheckApp.git
 ```
 
 ### 2. 환경 변수 설정
@@ -228,6 +288,12 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api
 AUTH_SECRET=your-auth-secret
 ```
 
+**PriceCheckApp/.env**
+```env
+EXPO_PUBLIC_API_URL=http://10.0.2.2:3001/api  # Android 에뮬레이터
+# EXPO_PUBLIC_API_URL=http://localhost:3001/api  # iOS 시뮬레이터
+```
+
 ### 3. 데이터베이스 실행
 ```bash
 docker-compose up -d
@@ -241,17 +307,28 @@ npx prisma db push
 npm run dev
 ```
 
-### 5. 프론트엔드 실행
+### 5. 프론트엔드 실행 (Web)
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-### 6. 접속
-- 프론트엔드: http://localhost:3000
+### 6. 모바일 앱 실행
+```bash
+cd PriceCheckApp
+npm install
+npm start          # Expo 개발 서버
+# 또는
+npm run android    # Android 에뮬레이터
+npm run ios        # iOS 시뮬레이터 (macOS만)
+```
+
+### 7. 접속
+- 웹 프론트엔드: http://localhost:3000
 - 백엔드 API: http://localhost:3001/api
 - 헬스체크: http://localhost:3001/api/health
+- Expo 개발 서버: http://localhost:8081
 
 ---
 
@@ -259,11 +336,12 @@ npm run dev
 
 ### 프로덕션 환경
 
-| 서비스 | 플랫폼 | URL |
-|-------|--------|-----|
-| Frontend | Vercel | https://pricecheck.kr |
+| 서비스 | 플랫폼 | URL/상태 |
+|-------|--------|---------|
+| Web Frontend | Vercel | https://pricecheck.kr |
 | Backend | Railway | https://api.pricecheck.kr |
 | Database | Supabase | PostgreSQL (ap-southeast-2) |
+| Mobile App | Play Store | 출시 준비 중 |
 
 ### 배포 비용 (월간)
 | 서비스 | 플랜 | 비용 |
@@ -271,11 +349,13 @@ npm run dev
 | Vercel | Hobby (무료) | $0 |
 | Railway | Starter ($5 크레딧) | ~$5 |
 | Supabase | Free | $0 |
+| Play Store | 개발자 계정 | $25 (일회성) |
 | **합계** | | **$0~5** |
 
 ### CI/CD
 - **Frontend**: GitHub → Vercel 자동 배포
 - **Backend**: GitHub → Railway 자동 배포
+- **Mobile**: EAS Build → Play Store
 
 ---
 
@@ -354,11 +434,48 @@ npm run dev
 
 ---
 
+## 모바일 앱 특징
+
+### 주요 화면
+- **홈**: 빠른 검색 및 서비스 소개
+- **가격 추천**: 검색/AI 인식 기반 시세 조회
+- **결과**: 추천 가격, 차트, 플랫폼별 비교
+- **히스토리**: 이전 검색 기록
+- **북마크**: 관심 상품 관리
+- **알림**: 목표가 도달 알림
+- **마이페이지**: 계정 관리
+
+### 기술적 특징
+- **인증 상태 관리**: Context API + Expo SecureStore
+- **서버 상태 관리**: React Query (캐싱, 리페치)
+- **클라이언트 상태**: Zustand
+- **스타일링**: NativeWind (Tailwind CSS)
+- **폼 검증**: React Hook Form + Zod
+- **차트**: react-native-chart-kit + react-native-svg
+- **네비게이션**: React Navigation (Stack + Bottom Tab)
+
+### 빌드 & 배포
+```bash
+# 개발 빌드
+eas build --profile development --platform android
+
+# 프로덕션 빌드
+eas build --profile production --platform android
+
+# Play Store 제출
+eas submit --platform android
+```
+
+---
+
 ## 향후 계획
 
-- [ ] React Native 앱 개발 (Play Store 출시)
+- [x] React Native 앱 개발
+- [ ] Play Store 출시
+- [ ] iOS 앱 출시
+- [ ] 푸시 알림 (FCM)
 - [ ] 가격 변동 추이 그래프
-- [ ] 알림 기능 고도화 (이메일, 푸시)
+- [ ] 알림 기능 고도화 (이메일)
 - [ ] 더 많은 플랫폼 지원
 
 ---
