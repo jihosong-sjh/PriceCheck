@@ -8,7 +8,7 @@
 
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import { z, ZodError } from 'zod';
-import { PrismaClient, type Category, type Condition } from '@prisma/client';
+import type { Category, Condition } from '@prisma/client';
 import {
   priceRecommendRequestSchema,
   CategoryEnum,
@@ -26,8 +26,7 @@ import { optionalAuth } from '../middleware/auth.js';
 import { detectCategoryWithConfidence } from '../services/categoryDetector.js';
 import naverShoppingService from '../services/naverShopping.js';
 import { logBusiness, logPerformance } from '../lib/logger.js';
-
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 const router = Router();
 
 // 카테고리 정보 타입

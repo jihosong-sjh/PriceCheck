@@ -3,12 +3,10 @@
  * 내부 DB + 네이버 쇼핑 API를 결합하여 자동완성 제안을 제공합니다.
  */
 
-import { PrismaClient } from '@prisma/client';
 import naverShoppingService from './naverShopping.js';
 import { detectCategory } from './categoryDetector.js';
 import type { Category } from '../utils/validators.js';
-
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 
 // 자동완성 제안 타입
 export interface AutocompleteSuggestion {

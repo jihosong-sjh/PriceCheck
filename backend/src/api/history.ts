@@ -5,7 +5,6 @@
  */
 
 import { Router, type Request, type Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { asyncHandler, AppError } from '../middleware/errorHandler.js';
 import { requireAuth } from '../middleware/auth.js';
 import {
@@ -14,8 +13,7 @@ import {
   CATEGORY_LABELS,
   CONDITION_LABELS,
 } from '../utils/validators.js';
-
-const prisma = new PrismaClient();
+import prisma from '../lib/prisma.js';
 const router = Router();
 
 /**
