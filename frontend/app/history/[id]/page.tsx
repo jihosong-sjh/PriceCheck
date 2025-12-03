@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
-import { getHistoryDetail, ApiException, setAuthToken } from '@/lib/api';
+import { getHistoryDetail, getSharedResult, ApiException, setAuthToken } from '@/lib/api';
 import type { HistoryDetailResponse } from '@/lib/types';
 import { CATEGORY_LABELS, CONDITION_LABELS } from '@/lib/types';
 import MarketComparison from '@/components/MarketComparison';
@@ -23,30 +23,31 @@ export default function HistoryDetailPage() {
       // 세션 로딩 중이면 대기
       if (status === 'loading') return;
 
-      // 세션이 없으면 로딩 해제
-      if (!session?.accessToken) {
-        setIsLoading(false);
-        return;
-      }
-
-      // NextAuth 세션의 accessToken을 API 클라이언트에 설정
-      setAuthToken(session.accessToken);
-
       setIsLoading(true);
       setError(null);
 
       try {
-        const data = await getHistoryDetail(id);
+        let data: HistoryDetailResponse;
+
+        if (session?.accessToken) {
+          // 로그인 상태: 본인 히스토리 조회 API 사용
+          setAuthToken(session.accessToken);
+          data = await getHistoryDetail(id);
+        } else {
+          // 비로그인 상태: 공개 공유 링크 API 사용 (인증 불필요)
+          data = await getSharedResult(id);
+        }
+
         setHistoryDetail(data);
       } catch (err) {
         if (err instanceof ApiException) {
           if (err.status === 404) {
-            setError('해당 히스토리를 찾을 수 없습니다.');
+            setError('해당 결과를 찾을 수 없습니다.');
           } else {
             setError(err.message);
           }
         } else {
-          setError('히스토리를 불러오는 중 오류가 발생했습니다.');
+          setError('결과를 불러오는 중 오류가 발생했습니다.');
         }
       } finally {
         setIsLoading(false);

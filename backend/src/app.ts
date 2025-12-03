@@ -26,6 +26,7 @@ import recognizeRouter from './api/recognize.js';
 import alertRouter from './api/alert.js';
 import notificationRouter from './api/notification.js';
 import searchRouter from './api/search.js';
+import shareRouter from './api/share.js';
 
 // 유틸
 import { startPriceAlertJob } from './jobs/priceAlertJob.js';
@@ -130,6 +131,7 @@ app.use('/api/recognize', recognizeRouter);
 app.use('/api/alerts', alertRouter);
 app.use('/api/notifications', notificationRouter);
 app.use('/api/search', searchRouter);
+app.use('/api/share', shareRouter);
 
 // 404 처리
 app.use(notFoundHandler);
