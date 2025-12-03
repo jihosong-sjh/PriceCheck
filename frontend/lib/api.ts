@@ -353,9 +353,39 @@ interface BackendHistoryDetailResponse {
   };
 }
 
-// 히스토리 상세 조회
+// 히스토리 상세 조회 (인증 필요)
 export async function getHistoryDetail(id: string): Promise<HistoryDetailResponse> {
   const response = await request<BackendHistoryDetailResponse>(`/history/${id}`);
+
+  const { data } = response;
+
+  return {
+    id: data.id,
+    category: data.category as HistoryDetailResponse['category'],
+    productName: data.productName,
+    modelName: data.modelName,
+    condition: data.condition as HistoryDetailResponse['condition'],
+    recommendedPrice: data.recommendedPrice,
+    priceMin: data.priceMin,
+    priceMax: data.priceMax,
+    marketDataSnapshot: data.marketDataSnapshot.map((item, index) => ({
+      id: `${index}`,
+      productName: data.productName,
+      modelName: data.modelName,
+      platform: item.platform as 'BUNJANG' | 'JOONGONARA',
+      price: item.price,
+      condition: item.condition,
+      originalUrl: item.originalUrl,
+      scrapedAt: item.scrapedAt,
+    })),
+    images: data.images,
+    createdAt: data.createdAt,
+  };
+}
+
+// 공유 링크 조회 (인증 불필요 - 공개 접근)
+export async function getSharedResult(id: string): Promise<HistoryDetailResponse> {
+  const response = await request<BackendHistoryDetailResponse>(`/share/${id}`);
 
   const { data } = response;
 
